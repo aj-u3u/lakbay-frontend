@@ -1,0 +1,139 @@
+import { X, MapPin, Clock, DollarSign } from 'lucide-react';
+
+interface Activity {
+  time: string;
+  activity: string;
+  location: string;
+}
+
+interface ItineraryDay {
+  day: number;
+  title: string;
+  activities: Activity[];
+}
+
+interface CostItem {
+  category: string;
+  amount: string;
+}
+
+interface TripDetailsPreviewModalProps {
+  planTitle: string;
+  totalCost: string;
+  duration: string;
+  itinerary: ItineraryDay[];
+  costBreakdown: CostItem[];
+  personalNotes?: string;
+  onClose: () => void;
+  isGroupTrip?: boolean;
+}
+
+export function TripDetailsPreviewModal({
+  planTitle,
+  totalCost,
+  duration,
+  itinerary,
+  costBreakdown,
+  personalNotes,
+  onClose,
+  isGroupTrip = false,
+}: TripDetailsPreviewModalProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 animate-fadeIn">
+      <div className="bg-card w-full max-h-[85vh] rounded-t-3xl overflow-hidden shadow-2xl animate-slideUp">
+        {/* Header */}
+        <div className={`${isGroupTrip ? 'bg-secondary' : 'bg-primary'} text-white p-6 flex items-center justify-between`}>
+          <div className="flex-1">
+            <h3 className="text-white mb-1">{planTitle}</h3>
+            <p className="text-white/80 text-sm">{duration} • {totalCost}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="overflow-y-auto max-h-[calc(85vh-100px)] scrollbar-hide">
+          {/* Cost Breakdown */}
+          <div className="p-6 border-b border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <DollarSign className="w-5 h-5 text-primary" />
+              <h4>Budget Breakdown</h4>
+            </div>
+            <div className="space-y-2">
+              {costBreakdown.map((item, idx) => (
+                <div key={idx} className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">{item.category}</span>
+                  <span className="text-sm font-medium">{item.amount}</span>
+                </div>
+              ))}
+              <div className="pt-2 border-t border-border flex justify-between items-center">
+                <span className="font-medium">Total</span>
+                <span className={`font-medium ${isGroupTrip ? 'text-secondary' : 'text-primary'}`}>{totalCost}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Itinerary */}
+          <div className="p-6 border-b border-border">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin className="w-5 h-5 text-primary" />
+              <h4>Day-by-Day Itinerary</h4>
+            </div>
+            <div className="space-y-6">
+              {itinerary.map((day) => (
+                <div key={day.day}>
+                  <div className="mb-3">
+                    <span className={`text-xs ${isGroupTrip ? 'text-secondary' : 'text-primary'} font-semibold`}>DAY {day.day}</span>
+                    <h4 className="text-sm mt-1">{day.title}</h4>
+                  </div>
+                  <div className="space-y-3 ml-4 border-l-2 border-border pl-4">
+                    {day.activities.map((activity, idx) => (
+                      <div key={idx} className="relative">
+                        <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full ${isGroupTrip ? 'bg-secondary' : 'bg-primary'}`}></div>
+                        <div className="flex items-start gap-2 mb-1">
+                          <Clock className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-muted-foreground">{activity.time}</span>
+                        </div>
+                        <p className="text-sm font-medium mb-1">{activity.activity}</p>
+                        <p className="text-xs text-muted-foreground">{activity.location}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Personal Notes */}
+          {personalNotes && (
+            <div className="p-6">
+              <h4 className="mb-3">Personal Notes</h4>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">{personalNotes}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out;
+        }
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out;
+        }
+      `}</style>
+    </div>
+  );
+}
