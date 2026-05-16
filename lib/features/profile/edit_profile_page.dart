@@ -18,13 +18,16 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        backgroundColor: colorScheme.surface,
+        title: Text('Edit Profile', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -44,61 +47,68 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          Center(
-            child: Stack(
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
+              Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(colors: [primaryColor, colorScheme.secondary]),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          'JD',
+                          style: TextStyle(color: colorScheme.onPrimary, fontSize: 32, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: theme.scaffoldBackgroundColor, width: 3),
+                        ),
+                        child: Icon(LucideIcons.camera, color: colorScheme.onPrimary, size: 18),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 32),
+              _EditField(label: 'Full Name', controller: _nameController, icon: LucideIcons.user),
+              const SizedBox(height: 20),
+              _EditField(label: 'Email Address', controller: _emailController, icon: LucideIcons.mail),
+              const SizedBox(height: 20),
+              _EditField(label: 'Phone Number', controller: _phoneController, icon: LucideIcons.phone),
+              const SizedBox(height: 32),
+              Text(
+                'Security', 
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [primaryColor, theme.colorScheme.secondary]),
-                    shape: BoxShape.circle,
+                    color: colorScheme.error.withValues(alpha: 0.1), 
+                    borderRadius: BorderRadius.circular(12)
                   ),
-                  child: const Center(
-                    child: Text(
-                      'JD',
-                      style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
-                    ),
-                  ),
+                  child: Icon(LucideIcons.lock, color: colorScheme.error, size: 20),
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: theme.scaffoldBackgroundColor, width: 3),
-                    ),
-                    child: const Icon(LucideIcons.camera, color: Colors.white, size: 18),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-          _EditField(label: 'Full Name', controller: _nameController, icon: LucideIcons.user),
-          const SizedBox(height: 20),
-          _EditField(label: 'Email Address', controller: _emailController, icon: LucideIcons.mail),
-          const SizedBox(height: 20),
-          _EditField(label: 'Phone Number', controller: _phoneController, icon: LucideIcons.phone),
-          const SizedBox(height: 32),
-          const Text('Security', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 16),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-              child: const Icon(LucideIcons.lock, color: Colors.red, size: 20),
-            ),
-            title: const Text('Change Password'),
-            subtitle: const Text('Last changed 3 months ago'),
-            trailing: const Icon(LucideIcons.chevronRight, size: 20),
-            onTap: () {},
-          ),
+                title: Text('Change Password', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold)),
+                subtitle: Text('Last changed 3 months ago', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+                trailing: Icon(LucideIcons.chevronRight, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                onTap: () {},
+              ),
             ],
           ),
         ),
@@ -117,16 +127,37 @@ class _EditField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+        Text(
+          label, 
+          style: TextStyle(
+            color: colorScheme.onSurface.withValues(alpha: 0.6), 
+            fontSize: 12, 
+            fontWeight: FontWeight.bold
+          )
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
+          style: TextStyle(color: colorScheme.onSurface),
           decoration: InputDecoration(
-            prefixIcon: Icon(icon, size: 18),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+            prefixIcon: Icon(icon, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: colorScheme.primary, width: 2),
+            ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           ),
         ),

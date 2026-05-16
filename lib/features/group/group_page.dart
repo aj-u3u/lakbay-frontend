@@ -14,8 +14,9 @@ class GroupPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final secondaryColor = colorScheme.secondary;
     final searchQuery = ref.watch(groupSearchQueryProvider);
 
     final filteredGroups = mockGroupTrips.where((group) {
@@ -24,6 +25,7 @@ class GroupPage extends ConsumerWidget {
     }).toList();
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -45,9 +47,9 @@ class GroupPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Group Trips',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                       ),
                       const SizedBox(height: 24),
                       Row(
@@ -55,7 +57,7 @@ class GroupPage extends ConsumerWidget {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: isDark ? Colors.grey[900] : Colors.white,
+                                color: colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -63,11 +65,13 @@ class GroupPage extends ConsumerWidget {
                               ),
                               child: TextField(
                                 onChanged: (val) => ref.read(groupSearchQueryProvider.notifier).state = val,
-                                decoration: const InputDecoration(
+                                style: TextStyle(color: colorScheme.onSurface),
+                                decoration: InputDecoration(
                                   hintText: 'Search group trips...',
-                                  prefixIcon: Icon(LucideIcons.search, color: Colors.grey),
+                                  hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                                  prefixIcon: Icon(LucideIcons.search, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                                   border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                 ),
                               ),
                             ),
@@ -75,7 +79,7 @@ class GroupPage extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Container(
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[900] : Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -83,7 +87,7 @@ class GroupPage extends ConsumerWidget {
                             ),
                             child: IconButton(
                               padding: const EdgeInsets.all(16),
-                              icon: const Icon(LucideIcons.listFilter),
+                              icon: Icon(LucideIcons.listFilter, color: colorScheme.onSurface),
                               onPressed: () => context.push('/filter'),
                             ),
                           ),
@@ -133,20 +137,20 @@ class GroupPage extends ConsumerWidget {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.grey[800] : Colors.grey[200],
+                        color: colorScheme.onSurface.withValues(alpha: 0.05),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(LucideIcons.users, size: 40, color: Colors.grey),
+                      child: Icon(LucideIcons.users, size: 40, color: colorScheme.onSurface.withValues(alpha: 0.2)),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'No group trips yet',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
+                    Text(
                       'Create your first group adventure with friends',
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
                   ],
                 ),
@@ -180,8 +184,9 @@ class _GroupCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final secondaryColor = colorScheme.secondary;
     final dateFormatter = DateFormat('MMM d');
     final yearFormatter = DateFormat('yyyy');
 
@@ -190,7 +195,7 @@ class _GroupCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         decoration: BoxDecoration(
-          color: isDark ? Colors.grey[900] : Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -219,34 +224,34 @@ class _GroupCard extends StatelessWidget {
                 children: [
                   Text(
                     group.name,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.calendar, size: 16, color: Colors.grey),
+                      Icon(LucideIcons.calendar, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       const SizedBox(width: 8),
                       Text(
                         '${dateFormatter.format(group.startDate)} - ${dateFormatter.format(group.endDate)}, ${yearFormatter.format(group.endDate)}',
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.users, size: 16, color: Colors.grey),
+                      Icon(LucideIcons.users, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       const SizedBox(width: 8),
                       Text(
                         '${group.members.length} members',
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
                     group.summary,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.4),
+                    style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.7), height: 1.4),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -256,9 +261,9 @@ class _GroupCard extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'Total: ',
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                            style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                           ),
                           Text(
                             '₱${NumberFormat('#,###').format(group.budget.total)}',
@@ -270,7 +275,7 @@ class _GroupCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const Icon(LucideIcons.chevronRight, size: 20, color: Colors.grey),
+                      Icon(LucideIcons.chevronRight, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.3)),
                     ],
                   ),
                 ],

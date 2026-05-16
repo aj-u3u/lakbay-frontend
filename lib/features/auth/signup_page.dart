@@ -43,17 +43,18 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   }
 
   void _handleSignup() {
-    // In a real app, perform validation and account creation
     context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
     final showPassword = ref.watch(signupShowPasswordProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -62,12 +63,9 @@ class _SignupPageState extends ConsumerState<SignupPage> {
             children: [
               IconButton(
                 onPressed: () => context.go('/login'),
-                icon: const Icon(LucideIcons.arrowLeft),
+                icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                style: IconButton.styleFrom(
-                  hoverColor: Colors.grey.withOpacity(0.1),
-                ),
               ),
               const SizedBox(height: 32),
               Expanded(
@@ -77,11 +75,12 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'Create Account',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -89,28 +88,35 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           'Join Lakbay+ and start exploring',
                           style: TextStyle(
                             fontSize: 16,
-                            color: isDark ? Colors.white54 : Colors.black54,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(height: 32),
-                        const Text(
+                        Text(
                           'Full Name',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _nameController,
                           keyboardType: TextInputType.name,
+                          style: TextStyle(color: colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: 'Juan Dela Cruz',
+                            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
                             filled: true,
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                            fillColor: colorScheme.surface,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -119,24 +125,31 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Email',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
+                          style: TextStyle(color: colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: 'your.email@example.com',
+                            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
                             filled: true,
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                            fillColor: colorScheme.surface,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -145,24 +158,31 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Password',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: !showPassword,
+                          style: TextStyle(color: colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: 'Create a strong password',
+                            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
                             filled: true,
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                            fillColor: colorScheme.surface,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -171,7 +191,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                             suffixIcon: IconButton(
                               icon: Icon(
                                 showPassword ? LucideIcons.eyeOff : LucideIcons.eye,
-                                color: isDark ? Colors.white54 : Colors.black54,
+                                color: colorScheme.onSurface.withValues(alpha: 0.4),
                               ),
                               onPressed: () {
                                 ref.read(signupShowPasswordProvider.notifier).state = !showPassword;
@@ -180,24 +200,31 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Confirm Password',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: !showPassword,
+                          style: TextStyle(color: colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: 'Re-enter your password',
+                            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
                             filled: true,
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                            fillColor: colorScheme.surface,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -242,7 +269,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                             Text(
                               "Already have an account? ",
                               style: TextStyle(
-                                color: isDark ? Colors.white54 : Colors.black54,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                             GestureDetector(

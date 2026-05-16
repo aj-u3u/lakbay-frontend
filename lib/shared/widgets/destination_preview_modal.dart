@@ -19,12 +19,13 @@ class DestinationPreviewModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       constraints: BoxConstraints(
@@ -37,17 +38,17 @@ class DestinationPreviewModal extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey.withOpacity(0.2))),
+              border: Border(bottom: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1))),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Quick Preview',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                 ),
                 IconButton(
-                  icon: const Icon(LucideIcons.x),
+                  icon: Icon(LucideIcons.x, color: colorScheme.onSurface),
                   onPressed: () => Navigator.pop(context),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -82,7 +83,7 @@ class DestinationPreviewModal extends StatelessWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
+                              color: colorScheme.surface.withValues(alpha: 0.95),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Row(
@@ -92,10 +93,10 @@ class DestinationPreviewModal extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   destination.rating.toString(),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.black,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               ],
@@ -109,37 +110,46 @@ class DestinationPreviewModal extends StatelessWidget {
                   
                   Text(
                     destination.name,
-                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                   ),
                   const SizedBox(height: 16),
                   
                   // Meta info
                   Row(
                     children: [
-                      const Icon(LucideIcons.mapPin, size: 20, color: Colors.grey),
+                      Icon(LucideIcons.mapPin, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: Text(destination.location, style: const TextStyle(color: Colors.grey)),
+                        child: Text(
+                          destination.location, 
+                          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.dollarSign, size: 20, color: Colors.grey),
+                      Icon(LucideIcons.dollarSign, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       const SizedBox(width: 8),
-                      Text(destination.entranceFee, style: const TextStyle(color: Colors.grey)),
+                      Text(
+                        destination.entranceFee, 
+                        style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   
                   Text(
                     destination.description,
-                    style: const TextStyle(color: Colors.grey),
+                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7)),
                   ),
                   const SizedBox(height: 24),
                   
-                  const Text('Top Activities', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Top Activities', 
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                  ),
                   const SizedBox(height: 12),
                   Wrap(
                     spacing: 8,
@@ -148,7 +158,7 @@ class DestinationPreviewModal extends StatelessWidget {
                       return Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
+                          color: primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -165,16 +175,19 @@ class DestinationPreviewModal extends StatelessWidget {
                     height: 100,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.grey[800] : Colors.grey[200],
+                      color: colorScheme.onSurface.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(LucideIcons.mapPin, color: Colors.grey),
-                          SizedBox(width: 8),
-                          Text('Map View', style: TextStyle(color: Colors.grey)),
+                          Icon(LucideIcons.mapPin, color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Map View', 
+                            style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))
+                          ),
                         ],
                       ),
                     ),
@@ -187,7 +200,7 @@ class DestinationPreviewModal extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        context.push('/destination/${destination.id}'); // Correct route implemented
+                        context.push('/destination/${destination.id}');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,

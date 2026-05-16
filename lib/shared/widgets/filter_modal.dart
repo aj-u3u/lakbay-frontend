@@ -25,12 +25,12 @@ class _FilterModalState extends State<FilterModal> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       padding: const EdgeInsets.all(24),
@@ -40,15 +40,21 @@ class _FilterModalState extends State<FilterModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Filters', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              Text(
+                'Filters', 
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+              ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(LucideIcons.x),
+                icon: Icon(LucideIcons.x, color: colorScheme.onSurface),
               ),
             ],
           ),
           const SizedBox(height: 32),
-          const Text('Category', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            'Category', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+          ),
           const SizedBox(height: 16),
           Wrap(
             spacing: 12,
@@ -60,13 +66,13 @@ class _FilterModalState extends State<FilterModal> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: isSelected ? theme.colorScheme.primary : (isDark ? Colors.grey[800] : Colors.grey[100]),
+                    color: isSelected ? colorScheme.primary : colorScheme.onSurface.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     cat,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black87),
+                      color: isSelected ? Colors.white : colorScheme.onSurface.withValues(alpha: 0.7),
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
@@ -75,13 +81,18 @@ class _FilterModalState extends State<FilterModal> {
             }).toList(),
           ),
           const SizedBox(height: 32),
-          const Text('Price Range (per person)', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            'Price Range (per person)', 
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+          ),
           const SizedBox(height: 8),
           RangeSlider(
             values: _priceRange,
             min: 0,
             max: 20000,
             divisions: 20,
+            activeColor: colorScheme.primary,
+            inactiveColor: colorScheme.primary.withValues(alpha: 0.2),
             labels: RangeLabels(
               '₱${_priceRange.start.round()}',
               '₱${_priceRange.end.round()}',
@@ -91,8 +102,8 @@ class _FilterModalState extends State<FilterModal> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('₱0', style: TextStyle(color: Colors.grey[600])),
-              Text('₱20,000+', style: TextStyle(color: Colors.grey[600])),
+              Text('₱0', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
+              Text('₱20,000+', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
             ],
           ),
           const Spacer(),
@@ -104,8 +115,9 @@ class _FilterModalState extends State<FilterModal> {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2)),
                   ),
-                  child: const Text('Reset All'),
+                  child: Text('Reset All', style: TextStyle(color: colorScheme.onSurface)),
                 ),
               ),
               const SizedBox(width: 16),
@@ -113,7 +125,7 @@ class _FilterModalState extends State<FilterModal> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
+                    backgroundColor: colorScheme.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

@@ -25,17 +25,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _handleLogin() {
-    // In a real app, validate and authenticate here
     context.go('/home');
   }
 
   @override
   Widget build(BuildContext context) {
     final showPassword = ref.watch(showPasswordProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -44,12 +45,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             children: [
               IconButton(
                 onPressed: () => context.go('/landing'),
-                icon: const Icon(LucideIcons.arrowLeft),
+                icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
-                style: IconButton.styleFrom(
-                  hoverColor: Colors.grey.withOpacity(0.1),
-                ),
               ),
               const SizedBox(height: 32),
               Expanded(
@@ -59,11 +57,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'Welcome Back',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -71,28 +70,35 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           'Sign in to continue your journey',
                           style: TextStyle(
                             fontSize: 16,
-                            color: isDark ? Colors.white54 : Colors.black54,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(height: 32),
-                        const Text(
+                        Text(
                           'Email',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
+                          style: TextStyle(color: colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: 'your.email@example.com',
+                            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
                             filled: true,
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                            fillColor: colorScheme.surface,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -101,24 +107,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
+                        Text(
                           'Password',
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: !showPassword,
+                          style: TextStyle(color: colorScheme.onSurface),
                           decoration: InputDecoration(
                             hintText: 'Enter your password',
+                            hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
                             filled: true,
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[100],
+                            fillColor: colorScheme.surface,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1)),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -127,7 +140,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             suffixIcon: IconButton(
                               icon: Icon(
                                 showPassword ? LucideIcons.eyeOff : LucideIcons.eye,
-                                color: isDark ? Colors.white54 : Colors.black54,
+                                color: colorScheme.onSurface.withValues(alpha: 0.4),
                               ),
                               onPressed: () {
                                 ref.read(showPasswordProvider.notifier).state = !showPassword;
@@ -165,7 +178,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             Text(
                               "Don't have an account? ",
                               style: TextStyle(
-                                color: isDark ? Colors.white54 : Colors.black54,
+                                color: colorScheme.onSurface.withValues(alpha: 0.6),
                               ),
                             ),
                             GestureDetector(

@@ -12,20 +12,22 @@ class NotificationsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifications = ref.watch(notificationsProvider);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        backgroundColor: colorScheme.surface,
+        title: Text('Notifications', style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold)),
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
         actions: [
           if (notifications.any((n) => !n.isRead))
             TextButton(
               onPressed: () => ref.read(notificationsProvider.notifier).markAllAsRead(),
-              child: const Text('Mark all as read'),
+              child: Text('Mark all as read', style: TextStyle(color: colorScheme.primary)),
             ),
         ],
       ),
@@ -34,11 +36,11 @@ class NotificationsPage extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(LucideIcons.bellOff, size: 64, color: Colors.grey.withOpacity(0.3)),
+                  Icon(LucideIcons.bellOff, size: 64, color: colorScheme.onSurface.withValues(alpha: 0.1)),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'No notifications yet',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 16),
                   ),
                 ],
               ),
@@ -56,16 +58,16 @@ class NotificationsPage extends ConsumerWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: n.isRead 
-                        ? (isDark ? Colors.grey[900] : Colors.grey[50])
-                        : (isDark ? Colors.grey[800] : Colors.white),
+                        ? colorScheme.surface.withValues(alpha: 0.5)
+                        : colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: n.isRead ? Colors.transparent : theme.colorScheme.primary.withOpacity(0.2),
+                        color: n.isRead ? Colors.transparent : colorScheme.primary.withValues(alpha: 0.2),
                       ),
                       boxShadow: [
                         if (!n.isRead)
                           BoxShadow(
-                            color: theme.colorScheme.primary.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -78,13 +80,13 @@ class NotificationsPage extends ConsumerWidget {
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: n.isRead 
-                              ? Colors.grey.withOpacity(0.1)
-                              : theme.colorScheme.primary.withOpacity(0.1),
+                              ? colorScheme.onSurface.withValues(alpha: 0.05)
+                              : colorScheme.primary.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             n.isRead ? LucideIcons.bell : LucideIcons.bellDot,
-                            color: n.isRead ? Colors.grey : theme.colorScheme.primary,
+                            color: n.isRead ? colorScheme.onSurface.withValues(alpha: 0.3) : colorScheme.primary,
                             size: 20,
                           ),
                         ),
@@ -101,11 +103,12 @@ class NotificationsPage extends ConsumerWidget {
                                     style: TextStyle(
                                       fontWeight: n.isRead ? FontWeight.normal : FontWeight.bold,
                                       fontSize: 16,
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                   Text(
                                     DateFormat.jm().format(n.timestamp),
-                                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12),
                                   ),
                                 ],
                               ),
@@ -113,14 +116,14 @@ class NotificationsPage extends ConsumerWidget {
                               Text(
                                 n.message,
                                 style: TextStyle(
-                                  color: isDark ? Colors.white70 : Colors.black54,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.7),
                                   fontSize: 14,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 DateFormat('MMM d, yyyy').format(n.timestamp),
-                                style: const TextStyle(color: Colors.grey, fontSize: 11),
+                                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 11),
                               ),
                             ],
                           ),

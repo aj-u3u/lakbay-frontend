@@ -7,16 +7,20 @@ class LandingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF20878E),
-              Color(0xFF1A6F75),
+              primaryColor,
+              primaryColor.withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -35,17 +39,17 @@ class LandingPage extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 15,
                         offset: const Offset(0, 5),
                       ),
                     ],
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       LucideIcons.plane,
                       size: 48,
-                      color: Color(0xFF20878E),
+                      color: primaryColor,
                     ),
                   ),
                 ),
@@ -63,12 +67,12 @@ class LandingPage extends StatelessWidget {
                   'Your AI-Powered Travel Companion\nDiscover Davao Region',
                   style: TextStyle(
                     fontSize: 18,
-                    color: Colors.white70, // equivalent to white/90 in feel
+                    color: Colors.white70,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 48), // Dummy just to keep same structure if needed, but not needed here
                 SizedBox(
                   width: double.infinity,
                   height: 56,
@@ -76,7 +80,7 @@ class LandingPage extends StatelessWidget {
                     onPressed: () => context.push('/login'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF20878E),
+                      foregroundColor: primaryColor,
                       elevation: 4,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),

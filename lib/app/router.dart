@@ -17,6 +17,8 @@ import '../features/profile/edit_profile_page.dart';
 import '../features/profile/settings_detail_page.dart';
 import '../features/home/notifications_page.dart';
 import '../features/home/filter_destinations_page.dart';
+import '../features/home/new_special_page.dart';
+import '../features/home/recommended_page.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -70,6 +72,14 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/filter',
       builder: (context, state) => const FilterDestinationsPage(),
+    ),
+    GoRoute(
+      path: '/new-special',
+      builder: (context, state) => const NewSpecialPage(),
+    ),
+    GoRoute(
+      path: '/recommended',
+      builder: (context, state) => const RecommendedPage(),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {

@@ -16,20 +16,24 @@ class FilterDestinationsPage extends ConsumerWidget {
     final selectedDistrict = ref.watch(selectedDistrictProvider);
     final filteredPlaces = ref.watch(filteredPlacesProvider);
     final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     final themes = ['Nature', 'Adventure', 'Beach', 'Culture', 'City'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F0F0F), // Dark background
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: Colors.white),
+          icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Filter Destinations', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(
+          'Filter Destinations', 
+          style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold)
+        ),
         actions: [
           TextButton(
             onPressed: () {
@@ -47,29 +51,32 @@ class FilterDestinationsPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Travel Themes Section
-              const Text('Travel Themes', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                'Travel Themes', 
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900],
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[800]!),
+                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: null,
                     hint: Text(
                       selectedTheme != null ? '1 theme selected' : 'Select theme...',
-                      style: const TextStyle(color: Colors.grey),
+                      style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     ),
-                    icon: const Icon(LucideIcons.chevronDown, color: Colors.grey),
+                    icon: Icon(LucideIcons.chevronDown, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     isExpanded: true,
-                    dropdownColor: Colors.grey[900],
+                    dropdownColor: colorScheme.surface,
                     items: themes.map((t) {
                       return DropdownMenuItem<String>(
                         value: t,
-                        child: Text(t, style: const TextStyle(color: Colors.white)),
+                        child: Text(t, style: TextStyle(color: colorScheme.onSurface)),
                       );
                     }).toList(),
                     onChanged: (val) => ref.read(selectedThemeProvider.notifier).update(val),
@@ -88,7 +95,7 @@ class FilterDestinationsPage extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '$selectedTheme & Heritage', // Added legacy suffix as per requirement example "Culture & Heritage"
+                        '$selectedTheme & Heritage',
                         style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 4),
@@ -104,26 +111,32 @@ class FilterDestinationsPage extends ConsumerWidget {
               const SizedBox(height: 32),
 
               // Districts Section
-              const Text('Districts', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                'Districts', 
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold)
+              ),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900],
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[800]!),
+                  border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
                     value: selectedDistrict,
-                    hint: const Text('Select district...', style: TextStyle(color: Colors.grey)),
-                    icon: const Icon(LucideIcons.chevronDown, color: Colors.grey),
+                    hint: Text(
+                      'Select district...', 
+                      style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))
+                    ),
+                    icon: Icon(LucideIcons.chevronDown, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                     isExpanded: true,
-                    dropdownColor: Colors.grey[900],
+                    dropdownColor: colorScheme.surface,
                     items: districts.map((d) {
                       return DropdownMenuItem<String>(
                         value: d,
-                        child: Text(d, style: const TextStyle(color: Colors.white)),
+                        child: Text(d, style: TextStyle(color: colorScheme.onSurface)),
                       );
                     }).toList(),
                     onChanged: (val) => ref.read(selectedDistrictProvider.notifier).update(val),
@@ -134,11 +147,14 @@ class FilterDestinationsPage extends ConsumerWidget {
               const SizedBox(height: 40),
 
               // Discover Places Section
-              const Text('Discover Places', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+              Text(
+                'Discover Places', 
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 20, fontWeight: FontWeight.bold)
+              ),
               const SizedBox(height: 4),
               Text(
                 '${filteredPlaces.length} destinations found',
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
+                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
               ),
               const SizedBox(height: 24),
 
@@ -160,15 +176,18 @@ class _FilterDestinationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     return GestureDetector(
       onTap: () => DestinationPreviewModal.show(context, destination),
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A1A),
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Column(
@@ -188,17 +207,15 @@ class _FilterDestinationCard extends StatelessWidget {
                     top: 16,
                     right: 16,
                     child: Container(
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: colorScheme.surface.withValues(alpha: 0.9),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8),
                         ],
                       ),
-                      child: const IconButton(
-                        icon: Icon(Icons.star, color: Color(0xFFFFD700), size: 24), // Yellow Star
-                        onPressed: null, // Static icon for design
-                      ),
+                      child: const Icon(Icons.star, color: Color(0xFFFFD700), size: 24),
                     ),
                   ),
                 ],
@@ -211,16 +228,16 @@ class _FilterDestinationCard extends StatelessWidget {
                 children: [
                   Text(
                     destination.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(color: colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.mapPin, size: 14, color: Colors.grey),
+                      Icon(LucideIcons.mapPin, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 4),
                       Text(
                         destination.location,
-                        style: const TextStyle(color: Colors.grey, fontSize: 13),
+                        style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13),
                       ),
                     ],
                   ),
@@ -229,7 +246,7 @@ class _FilterDestinationCard extends StatelessWidget {
                     destination.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.grey, fontSize: 13, height: 1.5),
+                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13, height: 1.5),
                   ),
                 ],
               ),

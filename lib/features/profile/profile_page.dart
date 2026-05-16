@@ -9,12 +9,14 @@ class ProfilePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
+    final secondaryColor = colorScheme.secondary;
     final themeMode = ref.watch(themeModeProvider);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -36,15 +38,15 @@ class ProfilePage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Profile',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                       ),
                       const SizedBox(height: 24),
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.grey[900] : Colors.white,
+                          color: colorScheme.surface,
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -75,13 +77,13 @@ class ProfilePage extends ConsumerWidget {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Juan Dela Cruz',
-                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                                       ),
                                       Text(
                                         'juan.delacruz@email.com',
-                                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                                        style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
                                       ),
                                     ],
                                   ),
@@ -95,9 +97,9 @@ class ProfilePage extends ConsumerWidget {
                                 onPressed: () => context.push('/profile/edit'),
                                 style: OutlinedButton.styleFrom(
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  side: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[300]!),
+                                  side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2)),
                                 ),
-                                child: const Text('Edit Profile'),
+                                child: Text('Edit Profile', style: TextStyle(color: colorScheme.onSurface)),
                               ),
                             ),
                           ],
@@ -114,9 +116,9 @@ class ProfilePage extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                const Text(
+                Text(
                   'Your Travel Stats',
-                  style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 12),
                 Container(
@@ -208,7 +210,7 @@ class ProfilePage extends ConsumerWidget {
                 ),
                 
                 const SizedBox(height: 24),
-                const Text('Account & Privacy', style: TextStyle(color: Colors.grey)),
+                Text('Account & Privacy', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
                 const SizedBox(height: 12),
                 _SettingsGroup(
                   items: [
@@ -222,7 +224,7 @@ class ProfilePage extends ConsumerWidget {
                 ),
                 
                 const SizedBox(height: 24),
-                const Text('Support', style: TextStyle(color: Colors.grey)),
+                Text('Support', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
                 const SizedBox(height: 12),
                 _SettingsGroup(
                   items: [
@@ -243,8 +245,8 @@ class ProfilePage extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: () => context.go('/'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.withValues(alpha: 0.1),
-                      foregroundColor: Colors.red,
+                      backgroundColor: colorScheme.error.withValues(alpha: 0.1),
+                      foregroundColor: colorScheme.error,
                       elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
@@ -260,11 +262,11 @@ class ProfilePage extends ConsumerWidget {
                 ),
                 
                 const SizedBox(height: 24),
-                const Center(
+                Center(
                   child: Column(
                     children: [
-                      Text('Lakbay+ v1.0.0', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      Text('Made with ❤️ for Davao Region', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text('Lakbay+ v1.0.0', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
+                      Text('Made with ❤️ for Davao Region', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
                     ],
                   ),
                 ),
@@ -312,11 +314,12 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey),
+        Icon(icon, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
         const SizedBox(width: 8),
-        Text(title, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+        Text(title, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w500)),
       ],
     );
   }
@@ -329,10 +332,10 @@ class _SettingsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -346,7 +349,7 @@ class _SettingsGroup extends StatelessWidget {
             children: [
               item,
               if (idx < items.length - 1)
-                Divider(height: 1, color: isDark ? Colors.grey[800] : Colors.grey[200]),
+                Divider(height: 1, color: colorScheme.outline.withValues(alpha: 0.1)),
             ],
           );
         }).toList(),
@@ -370,7 +373,9 @@ class _SettingsItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(24),
@@ -391,12 +396,12 @@ class _SettingsItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(subtitle, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                  Text(subtitle, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)),
                 ],
               ),
             ),
-            const Icon(LucideIcons.chevronRight, size: 20, color: Colors.grey),
+            Icon(LucideIcons.chevronRight, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.3)),
           ],
         ),
       ),
@@ -409,20 +414,23 @@ class _AppearanceModal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     final currentTheme = ref.watch(themeModeProvider);
 
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Choose Appearance', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text(
+            'Choose Appearance', 
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+          ),
           const SizedBox(height: 24),
           _ThemeOption(
             title: 'Light Mode',
@@ -452,7 +460,7 @@ class _AppearanceModal extends ConsumerWidget {
             title: 'System Default',
             subtitle: 'Follows device settings',
             icon: LucideIcons.monitor,
-            iconColor: Colors.grey,
+            iconColor: Colors.blueGrey,
             isSelected: currentTheme == ThemeMode.system,
             onTap: () {
               ref.read(themeModeProvider.notifier).state = ThemeMode.system;
@@ -485,8 +493,8 @@ class _ThemeOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return InkWell(
       onTap: onTap,
@@ -496,7 +504,7 @@ class _ThemeOption extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: isSelected ? primaryColor : Colors.transparent, width: 2),
-          color: isSelected ? primaryColor.withValues(alpha: 0.1) : (isDark ? Colors.grey[800] : Colors.grey[100]),
+          color: isSelected ? primaryColor.withValues(alpha: 0.1) : colorScheme.onSurface.withValues(alpha: 0.05),
         ),
         child: Row(
           children: [
@@ -513,8 +521,8 @@ class _ThemeOption extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                  Text(subtitle, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)),
                 ],
               ),
             ),

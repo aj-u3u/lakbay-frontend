@@ -26,13 +26,15 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       orElse: () => throw Exception('Group trip not found'),
     );
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final secondaryColor = colorScheme.secondary;
     final leader = group.members.firstWhere((m) => m.isLeader);
     final teamMembers = group.members.where((m) => !m.isLeader).toList();
     final completedTasks = group.tasks.where((t) => t.completed).length;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // Header Image
@@ -43,9 +45,9 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
             leading: Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
-                backgroundColor: Colors.white.withValues(alpha: 0.9),
+                backgroundColor: colorScheme.surface.withValues(alpha: 0.9),
                 child: IconButton(
-                  icon: const Icon(LucideIcons.arrowLeft, color: Colors.black, size: 20),
+                  icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface, size: 20),
                   onPressed: () => context.pop(),
                 ),
               ),
@@ -66,27 +68,27 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                 children: [
                   Text(
                     group.name,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.mapPin, size: 18, color: Colors.grey),
+                      Icon(LucideIcons.mapPin, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 8),
                       Text(
                         group.destination,
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        style: TextStyle(fontSize: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.calendar, size: 18, color: Colors.grey),
+                      Icon(LucideIcons.calendar, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 8),
                       Text(
                         '${DateFormat('MMM d').format(group.startDate)} - ${DateFormat('MMM d, yyyy').format(group.endDate)}',
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        style: TextStyle(fontSize: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
@@ -97,9 +99,15 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('Trip Summary', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        Text(
+                          'Trip Summary', 
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                        ),
                         const SizedBox(height: 8),
-                        Text(group.summary, style: const TextStyle(color: Colors.grey, height: 1.5)),
+                        Text(
+                          group.summary, 
+                          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), height: 1.5)
+                        ),
                       ],
                     ),
                   ),
@@ -118,7 +126,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                                 const SizedBox(width: 10),
                                 Text(
                                   'Members (${group.members.length})',
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                                 ),
                               ],
                             ),
@@ -132,7 +140,10 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        const Text('Leader', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(
+                          'Leader', 
+                          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)
+                        ),
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -141,14 +152,23 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(leader.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                                const Text('Trip organizer', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                Text(
+                                  leader.name, 
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                                ),
+                                Text(
+                                  'Trip organizer', 
+                                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)
+                                ),
                               ],
                             ),
                           ],
                         ),
                         const SizedBox(height: 20),
-                        const Text('Team', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(
+                          'Team', 
+                          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)
+                        ),
                         const SizedBox(height: 12),
                         GridView.builder(
                           shrinkWrap: true,
@@ -166,7 +186,13 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                               children: [
                                 CircleAvatar(radius: 14, backgroundImage: NetworkImage(m.avatar)),
                                 const SizedBox(width: 8),
-                                Expanded(child: Text(m.name, style: const TextStyle(fontSize: 13), overflow: TextOverflow.ellipsis)),
+                                Expanded(
+                                  child: Text(
+                                    m.name, 
+                                    style: TextStyle(fontSize: 13, color: colorScheme.onSurface), 
+                                    overflow: TextOverflow.ellipsis
+                                  )
+                                ),
                               ],
                             );
                           },
@@ -188,7 +214,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                                 const SizedBox(width: 10),
                                 Text(
                                   'Tasks ($completedTasks/${group.tasks.length})',
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                                 ),
                               ],
                             ),
@@ -200,14 +226,14 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                           margin: const EdgeInsets.only(bottom: 8),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.grey[800] : Colors.grey[100],
+                            color: colorScheme.onSurface.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
                               Icon(
                                 task.completed ? LucideIcons.circleCheck : LucideIcons.circle,
-                                color: task.completed ? secondaryColor : Colors.grey,
+                                color: task.completed ? secondaryColor : colorScheme.onSurface.withValues(alpha: 0.3),
                                 size: 20,
                               ),
                               const SizedBox(width: 12),
@@ -220,10 +246,13 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                                       style: TextStyle(
                                         fontSize: 14,
                                         decoration: task.completed ? TextDecoration.lineThrough : null,
-                                        color: task.completed ? Colors.grey : null,
+                                        color: task.completed ? colorScheme.onSurface.withValues(alpha: 0.4) : colorScheme.onSurface,
                                       ),
                                     ),
-                                    Text(task.assignedTo, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                    Text(
+                                      task.assignedTo, 
+                                      style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.5))
+                                    ),
                                   ],
                                 ),
                               ),
@@ -279,7 +308,10 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                             children: [
                               Icon(LucideIcons.navigation, size: 20, color: secondaryColor),
                               const SizedBox(width: 10),
-                              const Text('Route Optimization', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Text(
+                                'Route Optimization', 
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                              ),
                             ],
                           ),
                           const SizedBox(height: 16),
@@ -287,16 +319,19 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                             height: 200,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[800] : Colors.grey[200],
+                              color: colorScheme.onSurface.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(LucideIcons.mapPin, size: 40, color: Colors.grey),
-                                  SizedBox(height: 8),
-                                  Text('Interactive Map of Mt. Apo', style: TextStyle(color: Colors.grey)),
+                                  Icon(LucideIcons.mapPin, size: 40, color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Interactive Map of Mt. Apo', 
+                                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))
+                                  ),
                                 ],
                               ),
                             ),
@@ -355,14 +390,15 @@ class _GroupBudgetModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final secondaryColor = colorScheme.secondary;
     final progress = group.budget.spent / group.budget.total;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
@@ -370,13 +406,19 @@ class _GroupBudgetModal extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: isDark ? Colors.grey[800]! : Colors.grey[200]!)),
+              border: Border(bottom: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1))),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Shared Budget', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(LucideIcons.x)),
+                Text(
+                  'Shared Budget', 
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context), 
+                  icon: Icon(LucideIcons.x, color: colorScheme.onSurface)
+                ),
               ],
             ),
           ),
@@ -387,24 +429,33 @@ class _GroupBudgetModal extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Total Budget', style: TextStyle(color: Colors.grey)),
-                    Text('₱${NumberFormat('#,###').format(group.budget.total)}', style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    Text('Total Budget', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5))),
+                    Text(
+                      '₱${NumberFormat('#,###').format(group.budget.total)}', 
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Per Person', style: TextStyle(color: Colors.grey)),
-                    Text('₱${NumberFormat('#,###').format(group.budget.perPerson)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Per Person', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5))),
+                    Text(
+                      '₱${NumberFormat('#,###').format(group.budget.perPerson)}', 
+                      style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Spent', style: TextStyle(color: Colors.grey)),
-                    Text('₱${NumberFormat('#,###').format(group.budget.spent)}', style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold)),
+                    Text('Spent', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5))),
+                    Text(
+                      '₱${NumberFormat('#,###').format(group.budget.spent)}', 
+                      style: TextStyle(color: secondaryColor, fontWeight: FontWeight.bold)
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -413,18 +464,21 @@ class _GroupBudgetModal extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: progress,
                     minHeight: 12,
-                    backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                    backgroundColor: colorScheme.onSurface.withValues(alpha: 0.05),
                     valueColor: AlwaysStoppedAnimation<Color>(secondaryColor),
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text('Member Contributions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  'Member Contributions', 
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                ),
                 const SizedBox(height: 16),
                 ...group.members.map((m) => Container(
                   margin: const EdgeInsets.only(bottom: 12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.grey[800] : Colors.grey[100],
+                    color: colorScheme.onSurface.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Row(
@@ -437,20 +491,29 @@ class _GroupBudgetModal extends StatelessWidget {
                           children: [
                             Row(
                               children: [
-                                Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text(
+                                  m.name, 
+                                  style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                                ),
                                 if (m.isLeader)
                                   Container(
                                     margin: const EdgeInsets.only(left: 8),
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(color: secondaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-                                    child: Text('Leader', style: TextStyle(color: secondaryColor, fontSize: 10, fontWeight: FontWeight.bold)),
+                                    decoration: BoxDecoration(
+                                      color: secondaryColor.withValues(alpha: 0.1), 
+                                      borderRadius: BorderRadius.circular(10)
+                                    ),
+                                    child: Text(
+                                      'Leader', 
+                                      style: TextStyle(color: secondaryColor, fontSize: 10, fontWeight: FontWeight.bold)
+                                    ),
                                   ),
                               ],
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Pledged: ₱${NumberFormat('#,###').format(m.contribution)}  •  Spent: ₱${NumberFormat('#,###').format(m.spent)}',
-                              style: const TextStyle(color: Colors.grey, fontSize: 12),
+                              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12),
                             ),
                           ],
                         ),
@@ -459,7 +522,10 @@ class _GroupBudgetModal extends StatelessWidget {
                   ),
                 )),
                 const SizedBox(height: 32),
-                const Text('Expense Breakdown', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(
+                  'Expense Breakdown', 
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                ),
                 const SizedBox(height: 16),
                 ...group.budget.categories.map((cat) => Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
@@ -468,8 +534,11 @@ class _GroupBudgetModal extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(cat.name, style: const TextStyle(fontSize: 14)),
-                          Text('₱${NumberFormat('#,###').format(cat.amount)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                          Text(cat.name, style: TextStyle(fontSize: 14, color: colorScheme.onSurface)),
+                          Text(
+                            '₱${NumberFormat('#,###').format(cat.amount)}', 
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -478,7 +547,7 @@ class _GroupBudgetModal extends StatelessWidget {
                         child: LinearProgressIndicator(
                           value: cat.amount / group.budget.total,
                           minHeight: 8,
-                          backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                          backgroundColor: colorScheme.onSurface.withValues(alpha: 0.05),
                           valueColor: AlwaysStoppedAnimation<Color>(Color(int.parse(cat.color.replaceFirst('#', '0xFF')))),
                         ),
                       ),
@@ -503,13 +572,14 @@ class _GroupItineraryDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final secondaryColor = colorScheme.secondary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -528,11 +598,20 @@ class _GroupItineraryDayCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Day ${day.day}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text(day.title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                      Text(
+                        'Day ${day.day}', 
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                      ),
+                      Text(
+                        day.title, 
+                        style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14)
+                      ),
                     ],
                   ),
-                  Icon(isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown, color: Colors.grey),
+                  Icon(
+                    isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown, 
+                    color: colorScheme.onSurface.withValues(alpha: 0.4)
+                  ),
                 ],
               ),
             ),
@@ -554,13 +633,16 @@ class _GroupItineraryDayCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(act.activity, style: const TextStyle(fontSize: 14)),
+                            Text(act.activity, style: TextStyle(fontSize: 14, color: colorScheme.onSurface)),
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(LucideIcons.mapPin, size: 12, color: Colors.grey),
+                                Icon(LucideIcons.mapPin, size: 12, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                                 const SizedBox(width: 4),
-                                Text(act.location, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                Text(
+                                  act.location, 
+                                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)
+                                ),
                               ],
                             ),
                           ],
@@ -583,14 +665,15 @@ class _GroupTransportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryColor = Theme.of(context).colorScheme.secondary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final secondaryColor = colorScheme.secondary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -610,8 +693,11 @@ class _GroupTransportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(transport.mode, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('${transport.from} → ${transport.to}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(transport.mode, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                    Text(
+                      '${transport.from} → ${transport.to}', 
+                      style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)
+                    ),
                   ],
                 ),
               ),
@@ -624,8 +710,8 @@ class _GroupTransportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Fare', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    Text(transport.fare, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Fare', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)),
+                    Text(transport.fare, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                   ],
                 ),
               ),
@@ -633,8 +719,8 @@ class _GroupTransportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Duration', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    Text(transport.duration, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Duration', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)),
+                    Text(transport.duration, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                   ],
                 ),
               ),
@@ -646,20 +732,19 @@ class _GroupTransportCard extends StatelessWidget {
   }
 }
 
-// Reusable components
 class _CardContainer extends StatelessWidget {
   final Widget child;
   const _CardContainer({required this.child});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
@@ -680,14 +765,14 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? color : (isDark ? Colors.grey[900] : Colors.white),
+          color: isActive ? color : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             if (!isActive) BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
@@ -696,7 +781,7 @@ class _TabButton extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? Colors.white : Colors.grey,
+            color: isActive ? Colors.white : colorScheme.onSurface.withValues(alpha: 0.6),
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
         ),

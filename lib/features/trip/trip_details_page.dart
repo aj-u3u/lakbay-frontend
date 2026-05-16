@@ -26,11 +26,13 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
       orElse: () => throw Exception('Trip not found'),
     );
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
     final budgetProgress = trip.budget.spent / trip.budget.total;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // Header Image with Back button
@@ -41,9 +43,9 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
             leading: Padding(
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
-                backgroundColor: Colors.white.withValues(alpha: 0.9),
+                backgroundColor: colorScheme.surface.withValues(alpha: 0.9),
                 child: IconButton(
-                  icon: const Icon(LucideIcons.arrowLeft, color: Colors.black, size: 20),
+                  icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface, size: 20),
                   onPressed: () => context.pop(),
                 ),
               ),
@@ -64,27 +66,27 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                 children: [
                   Text(
                     trip.name,
-                    style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.mapPin, size: 18, color: Colors.grey),
+                      Icon(LucideIcons.mapPin, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 8),
                       Text(
                         trip.destination,
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        style: TextStyle(fontSize: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(LucideIcons.calendar, size: 18, color: Colors.grey),
+                      Icon(LucideIcons.calendar, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 8),
                       Text(
                         '${DateFormat('MMM d, yyyy').format(trip.startDate)} - ${DateFormat('MMM d, yyyy').format(trip.endDate)}',
-                        style: const TextStyle(fontSize: 16, color: Colors.grey),
+                        style: TextStyle(fontSize: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
@@ -95,14 +97,14 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Trip Summary',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           trip.summary,
-                          style: const TextStyle(color: Colors.grey, height: 1.5),
+                          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), height: 1.5),
                         ),
                       ],
                     ),
@@ -115,13 +117,13 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(LucideIcons.stickyNote, size: 20, color: Color(0xFF20878E)),
-                                SizedBox(width: 10),
+                                Icon(LucideIcons.stickyNote, size: 20, color: primaryColor),
+                                const SizedBox(width: 10),
                                 Text(
                                   'Travel Notes',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                                 ),
                               ],
                             ),
@@ -146,7 +148,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                               Expanded(
                                 child: Text(
                                   note,
-                                  style: const TextStyle(fontSize: 14),
+                                  style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
                                 ),
                               ),
                             ],
@@ -163,13 +165,13 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Row(
+                            Row(
                               children: [
-                                Icon(LucideIcons.camera, size: 20, color: Color(0xFF20878E)),
-                                SizedBox(width: 10),
+                                Icon(LucideIcons.camera, size: 20, color: primaryColor),
+                                const SizedBox(width: 10),
                                 Text(
                                   'Photo Memories',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                                 ),
                               ],
                             ),
@@ -185,13 +187,16 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                         ),
                         const SizedBox(height: 16),
                         if (trip.photos.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 20),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
                             child: Column(
                               children: [
-                                Icon(LucideIcons.camera, size: 48, color: Colors.grey),
-                                SizedBox(height: 12),
-                                Text('No photos yet. Capture your memories!', style: TextStyle(color: Colors.grey)),
+                                Icon(LucideIcons.camera, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No photos yet. Capture your memories!', 
+                                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))
+                                ),
                               ],
                             ),
                           )
@@ -259,11 +264,14 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(LucideIcons.navigation, size: 20, color: Color(0xFF20878E)),
-                              SizedBox(width: 10),
-                              Text('Route Optimization', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Icon(LucideIcons.navigation, size: 20, color: primaryColor),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Route Optimization', 
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                              ),
                             ],
                           ),
                           const SizedBox(height: 16),
@@ -271,35 +279,41 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                             height: 200,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[800] : Colors.grey[200],
+                              color: colorScheme.onSurface.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Center(
+                            child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(LucideIcons.mapPin, size: 40, color: Colors.grey),
-                                  SizedBox(height: 8),
-                                  Text('Interactive Map of Davao Region', style: TextStyle(color: Colors.grey)),
-                                  Text('Optimized route for all destinations', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                                  Icon(LucideIcons.mapPin, size: 40, color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Interactive Map of Davao Region', 
+                                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))
+                                  ),
+                                  Text(
+                                    'Optimized route for all destinations', 
+                                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                           const SizedBox(height: 16),
-                          const Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Total Distance', style: TextStyle(color: Colors.grey)),
-                              Text('~45 km', style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Total Distance', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+                              Text('~45 km', style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          const Row(
+                          Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Estimated Travel Time', style: TextStyle(color: Colors.grey)),
-                              Text('2.5 hours', style: TextStyle(fontWeight: FontWeight.bold)),
+                              Text('Estimated Travel Time', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+                              Text('2.5 hours', style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                             ],
                           ),
                         ],
@@ -314,11 +328,14 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
-                              Icon(LucideIcons.wallet, size: 20, color: Color(0xFF20878E)),
-                              SizedBox(width: 10),
-                              Text('Personal Budget', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              Icon(LucideIcons.wallet, size: 20, color: primaryColor),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Personal Budget', 
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                              ),
                             ],
                           ),
                           const SizedBox(height: 24),
@@ -331,7 +348,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                             child: LinearProgressIndicator(
                               value: budgetProgress,
                               minHeight: 12,
-                              backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                              backgroundColor: colorScheme.onSurface.withValues(alpha: 0.05),
                               valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
                             ),
                           ),
@@ -339,11 +356,14 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                           Center(
                             child: Text(
                               '${(budgetProgress * 100).toStringAsFixed(0)}% of budget used',
-                              style: const TextStyle(color: Colors.grey, fontSize: 12),
+                              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12),
                             ),
                           ),
                           const SizedBox(height: 32),
-                          const Text('Expense Breakdown', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text(
+                            'Expense Breakdown', 
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                          ),
                           const SizedBox(height: 16),
                           ...trip.budget.categories.map((cat) => Padding(
                             padding: const EdgeInsets.only(bottom: 16.0),
@@ -352,8 +372,11 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(cat.name, style: const TextStyle(fontSize: 14)),
-                                    Text('₱${NumberFormat('#,###').format(cat.amount)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                                    Text(cat.name, style: TextStyle(fontSize: 14, color: colorScheme.onSurface)),
+                                    Text(
+                                      '₱${NumberFormat('#,###').format(cat.amount)}', 
+                                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
@@ -362,7 +385,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                                   child: LinearProgressIndicator(
                                     value: cat.amount / trip.budget.total,
                                     minHeight: 8,
-                                    backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                                    backgroundColor: colorScheme.onSurface.withValues(alpha: 0.05),
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                       _parseColor(cat.color),
                                     ),
@@ -375,14 +398,17 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[800] : Colors.grey[100],
+                              color: colorScheme.onSurface.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Daily Spending Limit', style: TextStyle(color: Colors.grey)),
-                                Text('₱${NumberFormat('#,###').format(trip.budget.daily)}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                Text('Daily Spending Limit', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5))),
+                                Text(
+                                  '₱${NumberFormat('#,###').format(trip.budget.daily)}', 
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                                ),
                               ],
                             ),
                           ),
@@ -414,13 +440,13 @@ class _CardContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
@@ -440,15 +466,17 @@ class _TabButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? primaryColor : (isDark ? Colors.grey[900] : Colors.white),
+          color: isActive ? primaryColor : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             if (!isActive) BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4),
@@ -457,7 +485,7 @@ class _TabButton extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? Colors.white : Colors.grey,
+            color: isActive ? Colors.white : colorScheme.onSurface.withValues(alpha: 0.6),
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -475,13 +503,14 @@ class _ItineraryDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -500,11 +529,11 @@ class _ItineraryDayCard extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Day ${day.day}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text(day.title, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                      Text('Day ${day.day}', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                      Text(day.title, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14)),
                     ],
                   ),
-                  Icon(isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown, color: Colors.grey),
+                  Icon(isExpanded ? LucideIcons.chevronUp : LucideIcons.chevronDown, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                 ],
               ),
             ),
@@ -526,13 +555,13 @@ class _ItineraryDayCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(act.activity, style: const TextStyle(fontSize: 14)),
+                            Text(act.activity, style: TextStyle(fontSize: 14, color: colorScheme.onSurface)),
                             const SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(LucideIcons.mapPin, size: 12, color: Colors.grey),
+                                Icon(LucideIcons.mapPin, size: 12, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                                 const SizedBox(width: 4),
-                                Text(act.location, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                Text(act.location, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)),
                               ],
                             ),
                           ],
@@ -555,14 +584,15 @@ class _TransportCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[900] : Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
@@ -575,15 +605,15 @@ class _TransportCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(color: primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                child: const Icon(LucideIcons.bus, color: Color(0xFF20878E), size: 24),
+                child: Icon(LucideIcons.bus, color: primaryColor, size: 24),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(transport.mode, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('${transport.from} → ${transport.to}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    Text(transport.mode, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                    Text('${transport.from} → ${transport.to}', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)),
                   ],
                 ),
               ),
@@ -596,8 +626,8 @@ class _TransportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Fare', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    Text(transport.fare, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Fare', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)),
+                    Text(transport.fare, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                   ],
                 ),
               ),
@@ -605,8 +635,8 @@ class _TransportCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Duration', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                    Text(transport.duration, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Duration', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 12)),
+                    Text(transport.duration, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                   ],
                 ),
               ),
@@ -627,18 +657,19 @@ class _BudgetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(label, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 14)),
           Text(
             '₱${NumberFormat('#,###').format(value)}',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: color ?? (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black),
+              color: color ?? colorScheme.onSurface,
             ),
           ),
         ],

@@ -6,7 +6,6 @@ import '../../shared/data/destinations_data.dart';
 import '../../shared/widgets/destination_card.dart';
 import '../../shared/widgets/destination_preview_modal.dart';
 import '../../shared/providers/notification_provider.dart';
-import '../../shared/widgets/filter_modal.dart';
 import 'package:go_router/go_router.dart';
 
 final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
@@ -16,13 +15,14 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    // final searchQuery = ref.watch(searchQueryProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
     
     final newDestinations = destinations.take(3).toList();
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -32,7 +32,7 @@ class HomePage extends ConsumerWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    primaryColor.withOpacity(0.1),
+                    primaryColor.withValues(alpha: 0.1),
                     Colors.transparent,
                   ],
                 ),
@@ -46,11 +46,11 @@ class HomePage extends ConsumerWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Good morning,', style: TextStyle(color: Colors.grey)),
-                              Text('Juan! 👋', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                              Text('Good morning,', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+                              Text('Juan! 👋', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                             ],
                           ),
                           Stack(
@@ -58,14 +58,14 @@ class HomePage extends ConsumerWidget {
                             children: [
                               Container(
                                 decoration: BoxDecoration(
-                                  color: isDark ? Colors.grey[800] : Colors.white,
+                                  color: colorScheme.surface,
                                   shape: BoxShape.circle,
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+                                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
                                   ],
                                 ),
                                 child: IconButton(
-                                  icon: const Icon(LucideIcons.bell),
+                                  icon: Icon(LucideIcons.bell, color: colorScheme.onSurface),
                                   onPressed: () => context.push('/home/notifications'),
                                 ),
                               ),
@@ -80,9 +80,9 @@ class HomePage extends ConsumerWidget {
                                     child: Container(
                                       padding: const EdgeInsets.all(4),
                                       decoration: BoxDecoration(
-                                        color: Colors.red,
+                                        color: colorScheme.error,
                                         shape: BoxShape.circle,
-                                        border: Border.all(color: isDark ? Colors.grey[800]! : Colors.white, width: 2),
+                                        border: Border.all(color: colorScheme.surface, width: 2),
                                       ),
                                       constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
                                       child: Center(
@@ -105,19 +105,21 @@ class HomePage extends ConsumerWidget {
                           Expanded(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: isDark ? Colors.grey[800] : Colors.white,
+                                color: colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+                                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
                                 ],
                               ),
                               child: TextField(
                                 onChanged: (val) => ref.read(searchQueryProvider.notifier).state = val,
-                                decoration: const InputDecoration(
+                                style: TextStyle(color: colorScheme.onSurface),
+                                decoration: InputDecoration(
                                   hintText: 'Search destinations...',
-                                  prefixIcon: Icon(LucideIcons.search, color: Colors.grey),
+                                  hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                                  prefixIcon: Icon(LucideIcons.search, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                                   border: InputBorder.none,
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                                 ),
                               ),
                             ),
@@ -125,15 +127,15 @@ class HomePage extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Container(
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey[800] : Colors.white,
+                              color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+                                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
                               ],
                             ),
                             child: IconButton(
                               padding: const EdgeInsets.all(16),
-                              icon: const Icon(LucideIcons.listFilter),
+                              icon: Icon(LucideIcons.listFilter, color: colorScheme.onSurface),
                               onPressed: () => context.push('/filter'),
                             ),
                           ),
@@ -151,7 +153,7 @@ class HomePage extends ConsumerWidget {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 const SizedBox(height: 8),
-                const Text('Trending Now', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('Trending Now', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -199,26 +201,26 @@ class HomePage extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('New & Special', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text('New & Special', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => context.push('/new-special'),
                       child: Row(
                         children: [
                           Text('Show All', style: TextStyle(color: primaryColor)),
+                          const SizedBox(width: 4),
                           Icon(LucideIcons.chevronRight, size: 16, color: primaryColor),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
               ]),
             ),
           ),
           
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 270,
+              height: 285,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 scrollDirection: Axis.horizontal,
@@ -233,96 +235,7 @@ class HomePage extends ConsumerWidget {
               ),
             ),
           ),
-          
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const SizedBox(height: 24),
-                const Text('Travel Tips', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        primaryColor.withOpacity(0.1),
-                        Colors.teal.withOpacity(0.1),
-                        primaryColor.withOpacity(0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: primaryColor,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Center(child: Text('💡', style: TextStyle(fontSize: 24))),
-                      ),
-                      const SizedBox(width: 16),
-                      const Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Best Time to Visit Davao', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            SizedBox(height: 8),
-                            Text(
-                              'November to March offers the best weather for outdoor activities and beach trips. Expect sunny days and cool evenings perfect for exploring!',
-                              style: TextStyle(color: Colors.grey, height: 1.5),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                
-                const Text('Weekend Getaways', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-              ]),
-            ),
-          ),
-          
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 160,
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _WeekendCard(
-                    emoji: '🌅',
-                    title: 'Beach Sunset',
-                    subtitle: 'Perfect for couples',
-                    info: '2D/1N • from ₱3,500',
-                    gradient: const [Colors.pink, Colors.orange],
-                  ),
-                  _WeekendCard(
-                    emoji: '🏕️',
-                    title: 'Mountain Camp',
-                    subtitle: 'Adventure seekers',
-                    info: '3D/2N • from ₱5,000',
-                    gradient: const [Colors.teal, Colors.cyan],
-                  ),
-                  _WeekendCard(
-                    emoji: '🎭',
-                    title: 'Culture Tour',
-                    subtitle: 'History lovers',
-                    info: '1 Day • from ₱1,500',
-                    gradient: const [Colors.amber, Colors.orange],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
+
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverList(
@@ -331,12 +244,50 @@ class HomePage extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Recommended for You', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text('Weekend Getaways', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 180,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _WeekendCard(
+                        emoji: '🏖️',
+                        title: 'Beach Escape',
+                        subtitle: 'Dahican Beach',
+                        info: '3h from city',
+                        gradient: [const Color(0xFF0EA5E9), const Color(0xFF2DD4BF)],
+                      ),
+                      _WeekendCard(
+                        emoji: '⛰️',
+                        title: 'Mountain Trek',
+                        subtitle: 'Mt. Apo',
+                        info: 'High Difficulty',
+                        gradient: [const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
+                      ),
+                      _WeekendCard(
+                        emoji: '🦅',
+                        title: 'Wildlife Tour',
+                        subtitle: 'Eagle Center',
+                        info: 'Family Friendly',
+                        gradient: [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Recommended for You', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () => context.push('/recommended'),
                       child: Row(
                         children: [
                           Text('Show All', style: TextStyle(color: primaryColor)),
+                          const SizedBox(width: 4),
                           Icon(LucideIcons.chevronRight, size: 16, color: primaryColor),
                         ],
                       ),
@@ -348,41 +299,25 @@ class HomePage extends ConsumerWidget {
             ),
           ),
           
-          // Recommended lists grouped by district
-          ...districts.map((district) {
-            final districtDests = destinations.where((d) => d.district == district).toList();
-            if (districtDests.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
-            
-            return SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Text(district, style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-                  ),
-                  SizedBox(
-                    height: 270,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: districtDests.length,
-                      itemBuilder: (context, index) {
-                        final dest = districtDests[index];
-                        return DestinationCard(
-                          destination: dest,
-                          onClick: () => DestinationPreviewModal.show(context, dest),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 285,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                scrollDirection: Axis.horizontal,
+                itemCount: destinations.length,
+                itemBuilder: (context, index) {
+                  final dest = destinations[index];
+                  return DestinationCard(
+                    destination: dest,
+                    onClick: () => DestinationPreviewModal.show(context, dest),
+                  );
+                },
               ),
-            );
-          }),
+            ),
+          ),
           
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          const SliverToBoxAdapter(child: SizedBox(height: 60)),
         ],
       ),
     );
@@ -421,7 +356,7 @@ class _TrendingCard extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
-            colors: [Colors.black.withOpacity(0.8), Colors.transparent],
+            colors: [Colors.black.withValues(alpha: 0.8), Colors.transparent],
           ),
         ),
         padding: const EdgeInsets.all(12),
@@ -441,7 +376,7 @@ class _TrendingCard extends StatelessWidget {
               const SizedBox(height: 8),
             ],
             Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            if (subtitle != null) Text(subtitle!, style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+            if (subtitle != null) Text(subtitle!, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
           ],
         ),
       ),
@@ -479,7 +414,7 @@ class _WeekendCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: gradient.first.withOpacity(0.3),
+            color: gradient.first.withValues(alpha: 0.3),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -492,9 +427,9 @@ class _WeekendCard extends StatelessWidget {
           const Spacer(),
           Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 4),
-          Text(subtitle, style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+          Text(subtitle, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
           const SizedBox(height: 8),
-          Text(info, style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12)),
+          Text(info, style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
         ],
       ),
     );

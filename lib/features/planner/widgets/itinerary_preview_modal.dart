@@ -17,13 +17,14 @@ class ItineraryPreviewModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final accentColor = isGroupTrip ? theme.colorScheme.secondary : theme.colorScheme.primary;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final accentColor = isGroupTrip ? colorScheme.secondary : colorScheme.primary;
+    final onAccentColor = isGroupTrip ? colorScheme.onSecondary : colorScheme.onPrimary;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
-        color: theme.cardColor,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
@@ -44,18 +45,18 @@ class ItineraryPreviewModal extends StatelessWidget {
                     children: [
                       Text(
                         plan.title,
-                        style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: onAccentColor, fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '${plan.duration} • ${plan.totalCost}',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
+                        style: TextStyle(color: onAccentColor.withValues(alpha: 0.8), fontSize: 14),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(LucideIcons.x, color: Colors.white),
+                  icon: Icon(LucideIcons.x, color: onAccentColor),
                 ),
               ],
             ),
@@ -76,7 +77,12 @@ class ItineraryPreviewModal extends StatelessWidget {
                     children: [
                       Text('•', style: TextStyle(color: accentColor, fontSize: 18)),
                       const SizedBox(width: 12),
-                      Expanded(child: Text(h, style: const TextStyle(fontSize: 14))),
+                      Expanded(
+                        child: Text(
+                          h, 
+                          style: TextStyle(fontSize: 14, color: colorScheme.onSurface)
+                        )
+                      ),
                     ],
                   ),
                 )),
@@ -91,17 +97,29 @@ class ItineraryPreviewModal extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(item.category, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-                      Text(item.amount, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                      Text(
+                        item.category, 
+                        style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 14)
+                      ),
+                      Text(
+                        item.amount, 
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: colorScheme.onSurface)
+                      ),
                     ],
                   ),
                 )),
-                const Divider(height: 32),
+                Divider(height: 32, color: colorScheme.outline.withValues(alpha: 0.1)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text(plan.totalCost, style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      'Total', 
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colorScheme.onSurface)
+                    ),
+                    Text(
+                      plan.totalCost, 
+                      style: TextStyle(color: accentColor, fontWeight: FontWeight.bold, fontSize: 16)
+                    ),
                   ],
                 ),
 
@@ -120,7 +138,10 @@ class ItineraryPreviewModal extends StatelessWidget {
                         style: TextStyle(color: accentColor, fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
-                      Text(day.title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        day.title, 
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                      ),
                       const SizedBox(height: 16),
                       ...day.activities.map((act) => _ActivityItem(activity: act, color: accentColor)),
                     ],
@@ -137,7 +158,7 @@ class ItineraryPreviewModal extends StatelessWidget {
               onPressed: onSelect,
               style: ElevatedButton.styleFrom(
                 backgroundColor: accentColor,
-                foregroundColor: Colors.white,
+                foregroundColor: onAccentColor,
                 minimumSize: const Size(double.infinity, 56),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
@@ -159,11 +180,15 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Icon(icon, size: 20, color: color),
         const SizedBox(width: 10),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          title, 
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+        ),
       ],
     );
   }
@@ -177,11 +202,13 @@ class _ActivityItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       margin: const EdgeInsets.only(left: 6),
       padding: const EdgeInsets.only(left: 20, bottom: 20),
       decoration: BoxDecoration(
-        border: Border(left: BorderSide(color: Theme.of(context).dividerColor, width: 2)),
+        border: Border(left: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1), width: 2)),
       ),
       child: Stack(
         clipBehavior: Clip.none,
@@ -200,14 +227,23 @@ class _ActivityItem extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(LucideIcons.clock, size: 14, color: Colors.grey),
+                  Icon(LucideIcons.clock, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
                   const SizedBox(width: 6),
-                  Text(activity.time, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                  Text(
+                    activity.time, 
+                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)
+                  ),
                 ],
               ),
               const SizedBox(height: 4),
-              Text(activity.activity, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-              Text(activity.location, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(
+                activity.activity, 
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+              ),
+              Text(
+                activity.location, 
+                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4), fontSize: 12)
+              ),
             ],
           ),
         ],

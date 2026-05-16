@@ -248,11 +248,14 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
-    final secondaryColor = theme.colorScheme.secondary;
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
+    final secondaryColor = colorScheme.secondary;
     final accentColor = widget.isSolo ? primaryColor : secondaryColor;
+    final onAccentColor = widget.isSolo ? colorScheme.onPrimary : colorScheme.onSecondary;
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         flexibleSpace: Container(
           decoration: BoxDecoration(
@@ -265,22 +268,22 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
         ),
         title: Row(
           children: [
-            const Icon(LucideIcons.sparkles, size: 20, color: Colors.white),
+            Icon(LucideIcons.sparkles, size: 20, color: onAccentColor),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('AI Travel Assistant', style: TextStyle(color: Colors.white, fontSize: 16)),
+                Text('AI Travel Assistant', style: TextStyle(color: onAccentColor, fontSize: 16)),
                 Text(
                   'Planning your perfect ${widget.isSolo ? 'solo' : 'group'} trip',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
+                  style: TextStyle(color: onAccentColor.withValues(alpha: 0.8), fontSize: 12),
                 ),
               ],
             ),
           ],
         ),
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft, color: Colors.white),
+          icon: Icon(LucideIcons.arrowLeft, color: onAccentColor),
           onPressed: () => context.pop(),
         ),
       ),
@@ -303,7 +306,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
                         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: isUser ? accentColor : theme.cardColor,
+                          color: isUser ? accentColor : colorScheme.surface,
                           borderRadius: BorderRadius.circular(20).copyWith(
                             bottomRight: isUser ? const Radius.circular(0) : null,
                             bottomLeft: !isUser ? const Radius.circular(0) : null,
@@ -315,7 +318,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
                         child: Text(
                           message.text,
                           style: TextStyle(
-                            color: isUser ? Colors.white : theme.textTheme.bodyLarge?.color,
+                            color: isUser ? onAccentColor : colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -357,8 +360,8 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: theme.cardColor,
-              border: Border(top: BorderSide(color: theme.dividerColor)),
+              color: colorScheme.surface,
+              border: Border(top: BorderSide(color: colorScheme.outline.withValues(alpha: 0.1))),
             ),
             child: Row(
               children: [
@@ -366,17 +369,19 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
                   child: TextField(
                     controller: _inputController,
                     onSubmitted: (_) => _handleSend(),
+                    style: TextStyle(color: colorScheme.onSurface),
                     enabled: !_isGenerating && 
                              _currentStep != PlannerStep.complete && 
                              _currentStep != PlannerStep.confirmation,
                     decoration: InputDecoration(
                       hintText: 'Type your message...',
+                      hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: theme.brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
+                      fillColor: colorScheme.onSurface.withValues(alpha: 0.05),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     ),
                   ),
@@ -390,7 +395,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
                       color: accentColor,
                       borderRadius: BorderRadius.circular(15),
                     ),
-                    child: const Icon(LucideIcons.send, color: Colors.white, size: 24),
+                    child: Icon(LucideIcons.send, color: onAccentColor, size: 24),
                   ),
                 ),
               ],

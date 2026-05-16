@@ -8,7 +8,10 @@ class Destination {
   final double rating;
   final String location;
   final String entranceFee;
+  final String? overnightFee;
   final List<String> activities;
+  final List<ActivityPrice>? activityPrices;
+  final List<Accommodation>? accommodations;
   final String mealInclusions;
   final String travelNotes;
   final Coordinates coordinates;
@@ -23,10 +26,37 @@ class Destination {
     required this.rating,
     required this.location,
     required this.entranceFee,
+    this.overnightFee,
     required this.activities,
+    this.activityPrices,
+    this.accommodations,
     required this.mealInclusions,
     required this.travelNotes,
     required this.coordinates,
+  });
+}
+
+class ActivityPrice {
+  final String name;
+  final String price;
+  final bool isPerPerson;
+
+  ActivityPrice({
+    required this.name,
+    required this.price,
+    this.isPerPerson = true,
+  });
+}
+
+class Accommodation {
+  final String type;
+  final String price;
+  final String description;
+
+  Accommodation({
+    required this.type,
+    required this.price,
+    required this.description,
   });
 }
 
