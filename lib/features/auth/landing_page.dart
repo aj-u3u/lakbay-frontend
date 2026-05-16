@@ -43,10 +43,12 @@ class LandingPage extends StatelessWidget {
                     ],
                   ),
                   child: Center(
-                    child: Icon(
-                      LucideIcons.plane,
-                      size: 48,
-                      color: primaryColor,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),

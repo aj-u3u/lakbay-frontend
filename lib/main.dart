@@ -22,6 +22,7 @@ class LakbayPlusApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Lakbay+',
+      debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
