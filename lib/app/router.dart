@@ -13,6 +13,8 @@ import '../features/home/destination_details_page.dart';
 import '../features/trip/trip_details_page.dart';
 import '../features/group/group_details_page.dart';
 import '../features/planner/ai_planner_page.dart';
+import '../features/planner/itinerary_customize_page.dart';
+import '../features/planner/models/planner_models.dart';
 import '../features/profile/edit_profile_page.dart';
 import '../features/profile/settings_detail_page.dart';
 import '../features/home/notifications_page.dart';
@@ -80,6 +82,13 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/recommended',
       builder: (context, state) => const RecommendedPage(),
+    ),
+    GoRoute(
+      path: '/customize-itinerary',
+      builder: (context, state) {
+        final plan = state.extra as PlannerItineraryPlan;
+        return ItineraryCustomizePage(initialPlan: plan);
+      },
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
