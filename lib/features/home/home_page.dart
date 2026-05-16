@@ -550,7 +550,7 @@ class HomePage extends ConsumerWidget {
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    mainAxisExtent: 290,
+                    mainAxisExtent: 320,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {

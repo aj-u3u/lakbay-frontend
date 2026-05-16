@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../shared/data/trips_data.dart';
 import '../../shared/models/trip.dart';
 
@@ -19,23 +20,38 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
   String _activeTab = 'itinerary';
   int? _expandedDay = 1;
   List<String> _notes = [];
+  List<String> _photos = [];
   bool _isInitialized = false;
+  bool _hasGalleryPermission = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeNotes();
+    // Pre-initialize to avoid any undefined issues on Web
+    _notes = [];
+    _photos = [];
+    _initializeLocalData();
   }
 
-  void _initializeNotes() {
+  void _initializeLocalData() {
     if (_isInitialized) return;
     
-    final trip = mockTrips.firstWhere(
-      (t) => t.id == widget.id,
-      orElse: () => mockTrips.first,
-    );
-    _notes = List.from(trip.notes);
-    _isInitialized = true;
+    try {
+      final trip = mockTrips.firstWhere(
+        (t) => t.id == widget.id,
+        orElse: () => mockTrips.first,
+      );
+      
+      // Use cast to ensure we're getting a real list and handle potential JS undefined
+      _notes = List<String>.from(trip.notes as dynamic ?? <String>[]);
+      _photos = List<String>.from(trip.photos as dynamic ?? <String>[]);
+      _isInitialized = true;
+    } catch (e) {
+      // Fallback to empty lists if anything goes wrong
+      _notes = [];
+      _photos = [];
+      _isInitialized = true;
+    }
   }
 
   void _showNoteDialog({String? initialText, int? index}) {
@@ -83,9 +99,34 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
     });
   }
 
+  Future<void> _showPhotoDialog() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _photos.insert(0, image.path);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to access gallery')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    _initializeNotes();
+    _initializeLocalData();
 
     final trip = mockTrips.firstWhere(
       (t) => t.id == widget.id,
@@ -204,7 +245,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        if (_notes.isEmpty)
+                        if ((_notes ?? []).length == 0)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20),
                             child: Center(
@@ -219,7 +260,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                             ),
                           )
                         else
-                          ...List.generate(_notes.length, (index) {
+                          ...List.generate((_notes ?? []).length, (index) {
                             final note = _notes[index];
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12.0),
@@ -286,7 +327,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                               ],
                             ),
                             IconButton(
-                              onPressed: () {},
+                              onPressed: _showPhotoDialog,
                               icon: const Icon(LucideIcons.plus, size: 20),
                               style: IconButton.styleFrom(
                                 backgroundColor: primaryColor.withValues(alpha: 0.1),
@@ -296,7 +337,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        if (trip.photos.isEmpty)
+                        if ((_photos ?? []).length == 0)
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20),
                             child: Column(
@@ -319,10 +360,17 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 12,
                             ),
-                            itemCount: trip.photos.length,
+                            itemCount: (_photos ?? []).length,
                             itemBuilder: (context, index) => ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Image.network(trip.photos[index], fit: BoxFit.cover),
+                              child: Image.network(
+                                (_photos ?? [])[index], 
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                                ),
+                              ),
                             ),
                           ),
                       ],
@@ -363,7 +411,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
 
                   // Tab Content
                   if (_activeTab == 'itinerary')
-                    ...trip.itinerary.map((day) => _ItineraryDayCard(
+                    ...(trip.itinerary ?? []).map((day) => _ItineraryDayCard(
                       day: day,
                       isExpanded: _expandedDay == day.day,
                       onTap: () => setState(() => _expandedDay = _expandedDay == day.day ? null : day.day),
@@ -431,7 +479,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                     ),
 
                   if (_activeTab == 'transport')
-                    ...trip.transport.map((t) => _TransportCard(transport: t)),
+                    ...(trip.transport ?? []).map((t) => _TransportCard(transport: t)),
 
                   if (_activeTab == 'budget')
                     _CardContainer(
@@ -475,7 +523,7 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
                           ),
                           const SizedBox(height: 16),
-                          ...trip.budget.categories.map((cat) => Padding(
+                          ... (trip.budget.categories ?? []).map((cat) => Padding(
                             padding: const EdgeInsets.only(bottom: 16.0),
                             child: Column(
                               children: [
@@ -652,7 +700,7 @@ class _ItineraryDayCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
               child: Column(
-                children: day.activities.map((act) => Padding(
+                children: (day.activities ?? []).map((act) => Padding(
                   padding: const EdgeInsets.only(bottom: 16.0),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
