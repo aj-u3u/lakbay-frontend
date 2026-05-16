@@ -47,6 +47,13 @@ class HomePage extends ConsumerWidget {
     final primaryColor = colorScheme.primary;
 
     final locationAsync = ref.watch(currentLocationProvider);
+    final searchQuery = ref.watch(searchQueryProvider);
+
+    final filteredDestinations = destinations.where((d) => 
+      d.name.toLowerCase().contains(searchQuery.toLowerCase()) || 
+      d.location.toLowerCase().contains(searchQuery.toLowerCase()) ||
+      d.category.any((c) => c.toLowerCase().contains(searchQuery.toLowerCase()))
+    ).toList();
 
     final recommended = locationAsync.maybeWhen(
       data: (position) =>
@@ -64,7 +71,7 @@ class HomePage extends ConsumerWidget {
         return 'Exploring near you 📍';
       },
       loading: () => 'Getting your location...',
-      error: (_, __) => 'Good morning,',
+      error: (_, _) => 'Good morning,',
     );
 
     return Scaffold(
@@ -143,8 +150,9 @@ class HomePage extends ConsumerWidget {
                                   final count = ref.watch(
                                     unreadNotificationsCountProvider,
                                   );
-                                  if (count == 0)
+                                  if (count == 0) {
                                     return const SizedBox.shrink();
+                                  }
 
                                   return Positioned(
                                     top: -2,
@@ -255,234 +263,308 @@ class HomePage extends ConsumerWidget {
             ),
           ),
 
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const SizedBox(height: 8),
-                Text(
-                  'Trending Now',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
+          if (searchQuery.isEmpty) ...[
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const SizedBox(height: 8),
+                  Text(
+                    'Trending Now',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: GestureDetector(
-                        onTap: () => DestinationPreviewModal.show(
-                          context,
-                          recommended[1],
-                        ),
-                        child: _TrendingCard(
-                          image: recommended[1].image,
-                          title: recommended[1].name,
-                          subtitle: 'Paradise awaits 🌴',
-                          tag: '⭐ Top Pick',
-                          height: 280,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () => DestinationPreviewModal.show(
-                              context,
-                              recommended[0],
-                            ),
-                            child: _TrendingCard(
-                              image: recommended[0].image,
-                              title: recommended[0].name,
-                              height: 134,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          GestureDetector(
-                            onTap: () => DestinationPreviewModal.show(
-                              context,
-                              recommended[2],
-                            ),
-                            child: _TrendingCard(
-                              image: recommended[2].image,
-                              title: recommended[2].name,
-                              height: 134,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'New & Special',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => context.push('/new-special'),
-                      child: Row(
-                        children: [
-                          Text(
-                            'Show All',
-                            style: TextStyle(color: primaryColor),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            LucideIcons.chevronRight,
-                            size: 16,
-                            color: primaryColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ]),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 285,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                scrollDirection: Axis.horizontal,
-                itemCount: recommended.length,
-                itemBuilder: (context, index) {
-                  final dest = recommended[index];
-                  return DestinationCard(
-                    destination: dest,
-                    onClick: () => DestinationPreviewModal.show(context, dest),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Weekend Getaways',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 180,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      _WeekendCard(
-                        emoji: '🏖️',
-                        title: 'Beach Escape',
-                        subtitle: 'Dahican Beach',
-                        info: '3h from city',
-                        gradient: [
-                          const Color(0xFF0EA5E9),
-                          const Color(0xFF2DD4BF),
-                        ],
+                      Expanded(
+                        flex: 2,
+                        child: GestureDetector(
+                          onTap: () => DestinationPreviewModal.show(
+                            context,
+                            recommended[1],
+                          ),
+                          child: _TrendingCard(
+                            image: recommended[1].image,
+                            title: recommended[1].name,
+                            subtitle: 'Paradise awaits 🌴',
+                            tag: '⭐ Top Pick',
+                            height: 280,
+                          ),
+                        ),
                       ),
-                      _WeekendCard(
-                        emoji: '⛰️',
-                        title: 'Mountain Trek',
-                        subtitle: 'Mt. Apo',
-                        info: 'High Difficulty',
-                        gradient: [
-                          const Color(0xFF8B5CF6),
-                          const Color(0xFFD946EF),
-                        ],
-                      ),
-                      _WeekendCard(
-                        emoji: '🦅',
-                        title: 'Wildlife Tour',
-                        subtitle: 'Eagle Center',
-                        info: 'Family Friendly',
-                        gradient: [
-                          const Color(0xFFF59E0B),
-                          const Color(0xFFEF4444),
-                        ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () => DestinationPreviewModal.show(
+                                context,
+                                recommended[0],
+                              ),
+                              child: _TrendingCard(
+                                image: recommended[0].image,
+                                title: recommended[0].name,
+                                height: 134,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            GestureDetector(
+                              onTap: () => DestinationPreviewModal.show(
+                                context,
+                                recommended[2],
+                              ),
+                              child: _TrendingCard(
+                                image: recommended[2].image,
+                                title: recommended[2].name,
+                                height: 134,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Recommended for You',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
+                  const SizedBox(height: 32),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'New & Special',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
+                      TextButton(
+                        onPressed: () => context.push('/new-special'),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Show All',
+                              style: TextStyle(color: primaryColor),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              LucideIcons.chevronRight,
+                              size: 16,
+                              color: primaryColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ]),
+              ),
+            ),
+
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 285,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommended.length,
+                  itemBuilder: (context, index) {
+                    final dest = recommended[index];
+                    return DestinationCard(
+                      destination: dest,
+                      onClick: () => DestinationPreviewModal.show(context, dest),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Weekend Getaways',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 180,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _WeekendCard(
+                          emoji: '🏖️',
+                          title: 'Beach Escape',
+                          subtitle: 'Dahican Beach',
+                          info: '3h from city',
+                          gradient: [
+                            const Color(0xFF0EA5E9),
+                            const Color(0xFF2DD4BF),
+                          ],
+                        ),
+                        _WeekendCard(
+                          emoji: '⛰️',
+                          title: 'Mountain Trek',
+                          subtitle: 'Mt. Apo',
+                          info: 'High Difficulty',
+                          gradient: [
+                            const Color(0xFF8B5CF6),
+                            const Color(0xFFD946EF),
+                          ],
+                        ),
+                        _WeekendCard(
+                          emoji: '🦅',
+                          title: 'Wildlife Tour',
+                          subtitle: 'Eagle Center',
+                          info: 'Family Friendly',
+                          gradient: [
+                            const Color(0xFFF59E0B),
+                            const Color(0xFFEF4444),
+                          ],
+                        ),
+                      ],
                     ),
-                    TextButton(
-                      onPressed: () => context.push('/recommended'),
-                      child: Row(
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Recommended for You',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => context.push('/recommended'),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Show All',
+                              style: TextStyle(color: primaryColor),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              LucideIcons.chevronRight,
+                              size: 16,
+                              color: primaryColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ]),
+              ),
+            ),
+
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 285,
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: recommended.length,
+                  itemBuilder: (context, index) {
+                    final dest = recommended[index];
+                    return DestinationCard(
+                      destination: dest,
+                      onClick: () => DestinationPreviewModal.show(context, dest),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ] else ...[
+            SliverPadding(
+              padding: const EdgeInsets.all(24),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Search Results',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      Text(
+                        '${filteredDestinations.length} found',
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  if (filteredDestinations.isEmpty)
+                    Center(
+                      child: Column(
                         children: [
-                          Text(
-                            'Show All',
-                            style: TextStyle(color: primaryColor),
-                          ),
-                          const SizedBox(width: 4),
+                          const SizedBox(height: 40),
                           Icon(
-                            LucideIcons.chevronRight,
-                            size: 16,
-                            color: primaryColor,
+                            LucideIcons.searchX,
+                            size: 64,
+                            color: colorScheme.onSurface.withValues(alpha: 0.1),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No destinations found for "$searchQuery"',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(alpha: 0.4),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-              ]),
-            ),
-          ),
-
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 285,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                scrollDirection: Axis.horizontal,
-                itemCount: recommended.length,
-                itemBuilder: (context, index) {
-                  final dest = recommended[index];
-                  return DestinationCard(
-                    destination: dest,
-                    onClick: () => DestinationPreviewModal.show(context, dest),
-                  );
-                },
+                ]),
               ),
             ),
-          ),
+            if (filteredDestinations.isNotEmpty)
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    mainAxisExtent: 290,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final dest = filteredDestinations[index];
+                      return DestinationCard(
+                        destination: dest,
+                        onClick: () => DestinationPreviewModal.show(context, dest),
+                      );
+                    },
+                    childCount: filteredDestinations.length,
+                  ),
+                ),
+              ),
+          ],
 
           const SliverToBoxAdapter(child: SizedBox(height: 60)),
         ],
