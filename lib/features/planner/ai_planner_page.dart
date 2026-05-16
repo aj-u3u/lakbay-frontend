@@ -57,6 +57,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
   bool _isGenerating = false;
 
   final Map<String, String> _plannerData = {};
+  PlannerItineraryPlan? _selectedPlan;
 
   @override
   void initState() {
@@ -201,6 +202,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
       _plannerData['destination'] ?? widget.destination?.name ?? 'Davao',
     );
 
+    _selectedPlan = plan;
     _showItineraryModal(plan);
   }
 
@@ -235,11 +237,10 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
   void _handleConfirmation(String option) {
     _addMessage(option, Sender.user);
     Timer(const Duration(milliseconds: 800), () {
-      if (option == "Customize itinerary") {
-        _addMessage("Coming soon: Itinerary customization! For now, let's finalize this adventure.", Sender.ai);
-        // Let's add a logic here for the UI if the user selects a customized itinerary
-        
-        Timer(const Duration(seconds: 1), () => context.pop());
+      if (option == "Customize itinerary" && _selectedPlan != null) {
+        context.push('/customize-itinerary', extra: _selectedPlan);
+      } else if (option == "View Itinerary" && _selectedPlan != null) {
+        _showItineraryModal(_selectedPlan!);
       } else {
         _addMessage("Excellent! Your ${widget.isSolo ? 'trip' : 'group trip'} has been finalized.", Sender.ai);
         Timer(const Duration(seconds: 1), () => context.pop());

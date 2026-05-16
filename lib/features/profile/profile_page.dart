@@ -4,6 +4,35 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../main.dart'; // For themeModeProvider
 
+class PushNotificationsNotifier extends Notifier<bool> {
+  @override
+  bool build() => true;
+  void update(bool value) => state = value;
+}
+
+class EmailNotificationsNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void update(bool value) => state = value;
+}
+
+class SmsNotificationsNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void update(bool value) => state = value;
+}
+
+class SelectedRegionNotifier extends Notifier<String> {
+  @override
+  String build() => 'Davao Region';
+  void update(String value) => state = value;
+}
+
+final pushNotificationsProvider = NotifierProvider<PushNotificationsNotifier, bool>(PushNotificationsNotifier.new);
+final emailNotificationsProvider = NotifierProvider<EmailNotificationsNotifier, bool>(EmailNotificationsNotifier.new);
+final smsNotificationsProvider = NotifierProvider<SmsNotificationsNotifier, bool>(SmsNotificationsNotifier.new);
+final selectedRegionProvider = NotifierProvider<SelectedRegionNotifier, String>(SelectedRegionNotifier.new);
+
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
@@ -191,14 +220,14 @@ class ProfilePage extends ConsumerWidget {
                     _SettingsItem(
                       icon: LucideIcons.bell,
                       title: 'Notifications',
-                      subtitle: 'Push, email, SMS',
-                      onTap: () => context.push('/profile/settings/notifications'),
+                      subtitle: 'Manage alerts',
+                      onTap: () => _showNotificationsModal(context, ref),
                     ),
                     _SettingsItem(
                       icon: LucideIcons.mapPin,
                       title: 'Default Region',
-                      subtitle: 'Davao Region',
-                      onTap: () => context.push('/profile/settings/region'),
+                      subtitle: ref.watch(selectedRegionProvider),
+                      onTap: () => _showRegionModal(context, ref),
                     ),
                     _SettingsItem(
                       icon: LucideIcons.palette,
@@ -217,8 +246,8 @@ class ProfilePage extends ConsumerWidget {
                     _SettingsItem(
                       icon: LucideIcons.lock,
                       title: 'Privacy & Security',
-                      subtitle: 'Password, data, permissions',
-                      onTap: () => context.push('/profile/settings/privacy'),
+                      subtitle: 'Password and data',
+                      onTap: () => _showPrivacyModal(context),
                     ),
                   ],
                 ),
@@ -232,7 +261,7 @@ class ProfilePage extends ConsumerWidget {
                       icon: LucideIcons.info,
                       title: 'Help Center',
                       subtitle: 'FAQs and support',
-                      onTap: () => context.push('/profile/settings/help'),
+                      onTap: () => _showHelpModal(context),
                     ),
                   ],
                 ),
@@ -313,8 +342,45 @@ class ProfilePage extends ConsumerWidget {
   void _showAppearanceModal(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const _AppearanceModal(),
+    );
+  }
+
+  void _showNotificationsModal(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _NotificationsModal(),
+    );
+  }
+
+  void _showRegionModal(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _RegionModal(),
+    );
+  }
+
+  void _showPrivacyModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _PrivacyModal(),
+    );
+  }
+
+  void _showHelpModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _HelpModal(),
     );
   }
 }
@@ -562,4 +628,283 @@ class _ThemeOption extends StatelessWidget {
       ),
     );
   }
+}
+class _NotificationsModal extends ConsumerWidget {
+  const _NotificationsModal();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Notification Settings', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          const SizedBox(height: 24),
+          SwitchListTile(
+            title: const Text('Push Notifications'),
+            subtitle: const Text('Get instant alerts on your device'),
+            value: ref.watch(pushNotificationsProvider),
+            onChanged: (val) => ref.read(pushNotificationsProvider.notifier).update(val),
+            activeColor: colorScheme.primary,
+          ),
+          SwitchListTile(
+            title: const Text('Email Notifications'),
+            subtitle: const Text('Receive travel summaries via email'),
+            value: ref.watch(emailNotificationsProvider),
+            onChanged: (val) => ref.read(emailNotificationsProvider.notifier).update(val),
+            activeColor: colorScheme.primary,
+          ),
+          SwitchListTile(
+            title: const Text('SMS Notifications'),
+            subtitle: const Text('Important updates via text message'),
+            value: ref.watch(smsNotificationsProvider),
+            onChanged: (val) => ref.read(smsNotificationsProvider.notifier).update(val),
+            activeColor: colorScheme.primary,
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _RegionModal extends ConsumerWidget {
+  const _RegionModal();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final currentRegion = ref.watch(selectedRegionProvider);
+    final regions = [
+      'Davao del Norte',
+      'Davao del Sur',
+      'Davao de Oro',
+      'Davao Oriental',
+      'Davao Occidental',
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Default Region', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          const SizedBox(height: 12),
+          Text('Select your primary region for recommendations', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+          const SizedBox(height: 24),
+          ...regions.map((region) => RadioListTile<String>(
+            title: Text(region),
+            value: region,
+            groupValue: currentRegion,
+            onChanged: (val) {
+              if (val != null) {
+                ref.read(selectedRegionProvider.notifier).update(val);
+                Navigator.pop(context);
+              }
+            },
+            activeColor: colorScheme.primary,
+            contentPadding: EdgeInsets.zero,
+          )),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrivacyModal extends StatelessWidget {
+  const _PrivacyModal();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Privacy & Security', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          const SizedBox(height: 24),
+          _ActionTile(
+            icon: LucideIcons.key,
+            title: 'Change Password',
+            onTap: () {
+              Navigator.pop(context);
+              _showChangePasswordDialog(context);
+            },
+          ),
+          _ActionTile(
+            icon: LucideIcons.shieldCheck,
+            title: 'Two-Factor Authentication',
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('2FA setup will be available in the next update.')));
+            },
+          ),
+          _ActionTile(
+            icon: LucideIcons.database,
+            title: 'Manage My Data',
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Requesting data export... Check your email.')));
+            },
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _HelpModal extends StatelessWidget {
+  const _HelpModal();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Help Center', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          const SizedBox(height: 24),
+          _ActionTile(
+            icon: LucideIcons.messageSquare,
+            title: 'Live Chat Support',
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Connecting to Lakbay+ Support...'),
+                duration: Duration(seconds: 2),
+              ));
+            },
+          ),
+          _ActionTile(
+            icon: Icons.help_outline,
+            title: 'Frequently Asked Questions',
+            onTap: () {
+              Navigator.pop(context);
+              _showFAQsDialog(context);
+            },
+          ),
+          _ActionTile(
+            icon: LucideIcons.mail,
+            title: 'Email Support',
+            onTap: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Opening email composer...')));
+            },
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  const _ActionTile({required this.icon, required this.title, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ListTile(
+      leading: Icon(icon, color: colorScheme.primary),
+      title: Text(title, style: TextStyle(color: colorScheme.onSurface)),
+      trailing: const Icon(LucideIcons.chevronRight, size: 16),
+      onTap: onTap,
+      contentPadding: EdgeInsets.zero,
+    );
+  }
+}
+
+void _showChangePasswordDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Change Password'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(decoration: const InputDecoration(labelText: 'Old Password'), obscureText: true),
+          TextField(decoration: const InputDecoration(labelText: 'New Password'), obscureText: true),
+          TextField(decoration: const InputDecoration(labelText: 'Confirm New Password'), obscureText: true),
+        ],
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully!')));
+          },
+          child: const Text('Update'),
+        ),
+      ],
+    ),
+  );
+}
+
+void _showFAQsDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('FAQs'),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _faqItem('How do I plan a trip?', 'Go to the AI Planner tab and follow the steps.'),
+            _faqItem('Can I use the app offline?', 'Most features require an internet connection.'),
+            _faqItem('How to delete my account?', 'Contact support@lakbayplus.com.'),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+      ],
+    ),
+  );
+}
+
+Widget _faqItem(String question, String answer) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8.0),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(question, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(answer, style: const TextStyle(fontSize: 14)),
+      ],
+    ),
+  );
 }
