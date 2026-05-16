@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lakbay_plus/shared/models/destination.dart';
+import 'package:lakbay_plus/shared/providers/location_provider.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../shared/data/destinations_data.dart';
 import '../../shared/widgets/destination_card.dart';
@@ -13,13 +16,56 @@ final searchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
+  List<Destination> getNearbyDestinations(Position position) {
+    final sorted = [...destinations];
+
+    sorted.sort((a, b) {
+      final distA = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        a.coordinates.lat,
+        a.coordinates.lng,
+      );
+
+      final distB = Geolocator.distanceBetween(
+        position.latitude,
+        position.longitude,
+        b.coordinates.lat,
+        b.coordinates.lng,
+      );
+
+      return distA.compareTo(distB);
+    });
+
+    return sorted;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final primaryColor = colorScheme.primary;
-    
-    final newDestinations = destinations.take(3).toList();
+
+    final locationAsync = ref.watch(currentLocationProvider);
+
+    final recommended = locationAsync.maybeWhen(
+      data: (position) =>
+          position != null ? getNearbyDestinations(position) : destinations,
+      orElse: () => destinations,
+    );
+
+    final newDestinations = recommended.take(3).toList();
+
+    final greetingText = locationAsync.when(
+      data: (position) {
+        if (position == null) {
+          return 'Good morning,';
+        }
+        return 'Exploring near you 📍';
+      },
+      loading: () => 'Getting your location...',
+      error: (_, __) => 'Good morning,',
+    );
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -49,8 +95,22 @@ class HomePage extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Good morning,', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
-                              Text('Juan! 👋', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                              Text(
+                                greetingText,
+                                style: TextStyle(
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.6,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                'Juan! 👋',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
                             ],
                           ),
                           Stack(
@@ -61,19 +121,31 @@ class HomePage extends ConsumerWidget {
                                   color: colorScheme.surface,
                                   shape: BoxShape.circle,
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      blurRadius: 10,
+                                    ),
                                   ],
                                 ),
                                 child: IconButton(
-                                  icon: Icon(LucideIcons.bell, color: colorScheme.onSurface),
-                                  onPressed: () => context.push('/home/notifications'),
+                                  icon: Icon(
+                                    LucideIcons.bell,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                  onPressed: () =>
+                                      context.push('/home/notifications'),
                                 ),
                               ),
                               Consumer(
                                 builder: (context, ref, child) {
-                                  final count = ref.watch(unreadNotificationsCountProvider);
-                                  if (count == 0) return const SizedBox.shrink();
-                                  
+                                  final count = ref.watch(
+                                    unreadNotificationsCountProvider,
+                                  );
+                                  if (count == 0)
+                                    return const SizedBox.shrink();
+
                                   return Positioned(
                                     top: -2,
                                     right: -2,
@@ -82,13 +154,23 @@ class HomePage extends ConsumerWidget {
                                       decoration: BoxDecoration(
                                         color: colorScheme.error,
                                         shape: BoxShape.circle,
-                                        border: Border.all(color: colorScheme.surface, width: 2),
+                                        border: Border.all(
+                                          color: colorScheme.surface,
+                                          width: 2,
+                                        ),
                                       ),
-                                      constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 20,
+                                        minHeight: 20,
+                                      ),
                                       child: Center(
                                         child: Text(
                                           count > 9 ? '9+' : '$count',
-                                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -108,18 +190,37 @@ class HomePage extends ConsumerWidget {
                                 color: colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 10,
+                                  ),
                                 ],
                               ),
                               child: TextField(
-                                onChanged: (val) => ref.read(searchQueryProvider.notifier).state = val,
+                                onChanged: (val) =>
+                                    ref
+                                            .read(searchQueryProvider.notifier)
+                                            .state =
+                                        val,
                                 style: TextStyle(color: colorScheme.onSurface),
                                 decoration: InputDecoration(
                                   hintText: 'Search destinations...',
-                                  hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
-                                  prefixIcon: Icon(LucideIcons.search, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                                  hintStyle: TextStyle(
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                  ),
+                                  prefixIcon: Icon(
+                                    LucideIcons.search,
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                  ),
                                   border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
                                 ),
                               ),
                             ),
@@ -130,12 +231,18 @@ class HomePage extends ConsumerWidget {
                               color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
-                                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                ),
                               ],
                             ),
                             child: IconButton(
                               padding: const EdgeInsets.all(16),
-                              icon: Icon(LucideIcons.listFilter, color: colorScheme.onSurface),
+                              icon: Icon(
+                                LucideIcons.listFilter,
+                                color: colorScheme.onSurface,
+                              ),
                               onPressed: () => context.push('/filter'),
                             ),
                           ),
@@ -147,23 +254,33 @@ class HomePage extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 const SizedBox(height: 8),
-                Text('Trending Now', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                Text(
+                  'Trending Now',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       flex: 2,
                       child: GestureDetector(
-                        onTap: () => DestinationPreviewModal.show(context, destinations[1]),
+                        onTap: () => DestinationPreviewModal.show(
+                          context,
+                          recommended[1],
+                        ),
                         child: _TrendingCard(
-                          image: destinations[1].image,
-                          title: destinations[1].name,
+                          image: recommended[1].image,
+                          title: recommended[1].name,
                           subtitle: 'Paradise awaits 🌴',
                           tag: '⭐ Top Pick',
                           height: 280,
@@ -175,19 +292,25 @@ class HomePage extends ConsumerWidget {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: () => DestinationPreviewModal.show(context, destinations[0]),
+                            onTap: () => DestinationPreviewModal.show(
+                              context,
+                              recommended[0],
+                            ),
                             child: _TrendingCard(
-                              image: destinations[0].image,
-                              title: 'Eden Nature',
+                              image: recommended[0].image,
+                              title: recommended[0].name,
                               height: 134,
                             ),
                           ),
                           const SizedBox(height: 12),
                           GestureDetector(
-                            onTap: () => DestinationPreviewModal.show(context, destinations[3]),
+                            onTap: () => DestinationPreviewModal.show(
+                              context,
+                              recommended[2],
+                            ),
                             child: _TrendingCard(
-                              image: destinations[3].image,
-                              title: 'Eagle Center',
+                              image: recommended[2].image,
+                              title: recommended[2].name,
                               height: 134,
                             ),
                           ),
@@ -197,18 +320,32 @@ class HomePage extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 32),
-                
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('New & Special', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                    Text(
+                      'New & Special',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                     TextButton(
                       onPressed: () => context.push('/new-special'),
                       child: Row(
                         children: [
-                          Text('Show All', style: TextStyle(color: primaryColor)),
+                          Text(
+                            'Show All',
+                            style: TextStyle(color: primaryColor),
+                          ),
                           const SizedBox(width: 4),
-                          Icon(LucideIcons.chevronRight, size: 16, color: primaryColor),
+                          Icon(
+                            LucideIcons.chevronRight,
+                            size: 16,
+                            color: primaryColor,
+                          ),
                         ],
                       ),
                     ),
@@ -217,16 +354,16 @@ class HomePage extends ConsumerWidget {
               ]),
             ),
           ),
-          
+
           SliverToBoxAdapter(
             child: SizedBox(
               height: 285,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 scrollDirection: Axis.horizontal,
-                itemCount: newDestinations.length,
+                itemCount: recommended.length,
                 itemBuilder: (context, index) {
-                  final dest = newDestinations[index];
+                  final dest = recommended[index];
                   return DestinationCard(
                     destination: dest,
                     onClick: () => DestinationPreviewModal.show(context, dest),
@@ -244,7 +381,14 @@ class HomePage extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Weekend Getaways', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                    Text(
+                      'Weekend Getaways',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -258,21 +402,30 @@ class HomePage extends ConsumerWidget {
                         title: 'Beach Escape',
                         subtitle: 'Dahican Beach',
                         info: '3h from city',
-                        gradient: [const Color(0xFF0EA5E9), const Color(0xFF2DD4BF)],
+                        gradient: [
+                          const Color(0xFF0EA5E9),
+                          const Color(0xFF2DD4BF),
+                        ],
                       ),
                       _WeekendCard(
                         emoji: '⛰️',
                         title: 'Mountain Trek',
                         subtitle: 'Mt. Apo',
                         info: 'High Difficulty',
-                        gradient: [const Color(0xFF8B5CF6), const Color(0xFFD946EF)],
+                        gradient: [
+                          const Color(0xFF8B5CF6),
+                          const Color(0xFFD946EF),
+                        ],
                       ),
                       _WeekendCard(
                         emoji: '🦅',
                         title: 'Wildlife Tour',
                         subtitle: 'Eagle Center',
                         info: 'Family Friendly',
-                        gradient: [const Color(0xFFF59E0B), const Color(0xFFEF4444)],
+                        gradient: [
+                          const Color(0xFFF59E0B),
+                          const Color(0xFFEF4444),
+                        ],
                       ),
                     ],
                   ),
@@ -281,14 +434,28 @@ class HomePage extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Recommended for You', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+                    Text(
+                      'Recommended for You',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
                     TextButton(
                       onPressed: () => context.push('/recommended'),
                       child: Row(
                         children: [
-                          Text('Show All', style: TextStyle(color: primaryColor)),
+                          Text(
+                            'Show All',
+                            style: TextStyle(color: primaryColor),
+                          ),
                           const SizedBox(width: 4),
-                          Icon(LucideIcons.chevronRight, size: 16, color: primaryColor),
+                          Icon(
+                            LucideIcons.chevronRight,
+                            size: 16,
+                            color: primaryColor,
+                          ),
                         ],
                       ),
                     ),
@@ -298,16 +465,16 @@ class HomePage extends ConsumerWidget {
               ]),
             ),
           ),
-          
+
           SliverToBoxAdapter(
             child: SizedBox(
               height: 285,
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 scrollDirection: Axis.horizontal,
-                itemCount: destinations.length,
+                itemCount: recommended.length,
                 itemBuilder: (context, index) {
-                  final dest = destinations[index];
+                  final dest = recommended[index];
                   return DestinationCard(
                     destination: dest,
                     onClick: () => DestinationPreviewModal.show(context, dest),
@@ -316,7 +483,7 @@ class HomePage extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           const SliverToBoxAdapter(child: SizedBox(height: 60)),
         ],
       ),
@@ -345,10 +512,7 @@ class _TrendingCard extends StatelessWidget {
       height: height,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: NetworkImage(image),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: NetworkImage(image), fit: BoxFit.cover),
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -371,12 +535,28 @@ class _TrendingCard extends StatelessWidget {
                   color: Theme.of(context).colorScheme.secondary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(tag!, style: const TextStyle(fontSize: 10, color: Colors.white)),
+                child: Text(
+                  tag!,
+                  style: const TextStyle(fontSize: 10, color: Colors.white),
+                ),
               ),
               const SizedBox(height: 8),
             ],
-            Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            if (subtitle != null) Text(subtitle!, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (subtitle != null)
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 12,
+                ),
+              ),
           ],
         ),
       ),
@@ -425,11 +605,30 @@ class _WeekendCard extends StatelessWidget {
         children: [
           Text(emoji, style: const TextStyle(fontSize: 32)),
           const Spacer(),
-          Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(subtitle, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12)),
+          Text(
+            subtitle,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
+              fontSize: 12,
+            ),
+          ),
           const SizedBox(height: 8),
-          Text(info, style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
+          Text(
+            info,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     );

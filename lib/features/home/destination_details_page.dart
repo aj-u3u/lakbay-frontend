@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lakbay_plus/shared/widgets/destination_map_widget.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../shared/data/destinations_data.dart';
 import '../../shared/models/destination.dart';
@@ -35,7 +37,11 @@ class DestinationDetailsPage extends StatelessWidget {
               child: CircleAvatar(
                 backgroundColor: colorScheme.surface.withValues(alpha: 0.9),
                 child: IconButton(
-                  icon: Icon(LucideIcons.arrowLeft, color: colorScheme.onSurface, size: 20),
+                  icon: Icon(
+                    LucideIcons.arrowLeft,
+                    color: colorScheme.onSurface,
+                    size: 20,
+                  ),
                   onPressed: () => context.pop(),
                 ),
               ),
@@ -44,30 +50,40 @@ class DestinationDetailsPage extends StatelessWidget {
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.network(
-                    destination.image,
-                    fit: BoxFit.cover,
-                  ),
+                  Image.network(destination.image, fit: BoxFit.cover),
                   Positioned(
                     top: 50,
                     right: 16,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: colorScheme.surface.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                          ),
                         ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(LucideIcons.star, size: 18, color: Colors.amber),
+                          const Icon(
+                            LucideIcons.star,
+                            size: 18,
+                            color: Colors.amber,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             destination.rating.toString(),
-                            style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
                           ),
                         ],
                       ),
@@ -77,36 +93,50 @@ class DestinationDetailsPage extends StatelessWidget {
               ),
             ),
           ),
-          
+
           SliverPadding(
             padding: const EdgeInsets.all(24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 Text(
                   destination.name,
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(LucideIcons.mapPin, size: 18, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                    Icon(
+                      LucideIcons.mapPin,
+                      size: 18,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         destination.location,
-                        style: TextStyle(fontSize: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                
+
                 _InfoSection(
                   icon: LucideIcons.info,
                   title: 'About',
                   content: Text(
                     destination.description,
-                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), height: 1.5),
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                      height: 1.5,
+                    ),
                   ),
                 ),
 
@@ -117,111 +147,170 @@ class DestinationDetailsPage extends StatelessWidget {
                   content: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _BudgetRow(label: 'Entrance Fee', value: destination.entranceFee, showDivider: true),
                       _BudgetRow(
-                        label: 'Overnight Fee', 
-                        value: destination.overnightFee ?? 'Not required / N/A', 
-                        showDivider: true
+                        label: 'Entrance Fee',
+                        value: destination.entranceFee,
+                        showDivider: true,
                       ),
-                      
+                      _BudgetRow(
+                        label: 'Overnight Fee',
+                        value: destination.overnightFee ?? 'Not required / N/A',
+                        showDivider: true,
+                      ),
+
                       const SizedBox(height: 16),
                       Text(
-                        'Accommodation Options', 
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colorScheme.onSurface)
+                        'Accommodation Options',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      if (destination.accommodations != null && destination.accommodations!.isNotEmpty)
-                        ...destination.accommodations!.map((acc) => Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                acc.type, 
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: colorScheme.onSurface)
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                acc.price, 
-                                style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 14)
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                acc.description, 
-                                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13),
-                                softWrap: true,
-                                overflow: TextOverflow.visible,
-                              ),
-                              const SizedBox(height: 8),
-                              Divider(color: colorScheme.outline.withValues(alpha: 0.1)),
-                            ],
+                      if (destination.accommodations != null &&
+                          destination.accommodations!.isNotEmpty)
+                        ...destination.accommodations!.map(
+                          (acc) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  acc.type,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  acc.price,
+                                  style: TextStyle(
+                                    color: primaryColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  acc.description,
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                    fontSize: 13,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                ),
+                                const SizedBox(height: 8),
+                                Divider(
+                                  color: colorScheme.outline.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ))
+                        )
                       else
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16.0),
                           child: Text(
-                            'No accommodation available', 
-                            style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14)
+                            'No accommodation available',
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.6,
+                              ),
+                              fontSize: 14,
+                            ),
                           ),
                         ),
 
                       const SizedBox(height: 8),
                       Text(
-                        'Activity Prices', 
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: colorScheme.onSurface)
+                        'Activity Prices',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      if (destination.activityPrices != null && destination.activityPrices!.isNotEmpty)
-                        ...destination.activityPrices!.map((ap) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                ap.name, 
-                                style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface)
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '${ap.price} ${ap.isPerPerson ? '/ person' : '/ group'}',
-                                style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w500),
-                                softWrap: true,
-                                overflow: TextOverflow.visible,
-                              ),
-                              const SizedBox(height: 8),
-                              if (destination.activityPrices!.last != ap)
-                                Divider(color: colorScheme.outline.withValues(alpha: 0.1)),
-                            ],
+                      if (destination.activityPrices != null &&
+                          destination.activityPrices!.isNotEmpty)
+                        ...destination.activityPrices!.map(
+                          (ap) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  ap.name,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${ap.price} ${ap.isPerPerson ? '/ person' : '/ group'}',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  softWrap: true,
+                                  overflow: TextOverflow.visible,
+                                ),
+                                const SizedBox(height: 8),
+                                if (destination.activityPrices!.last != ap)
+                                  Divider(
+                                    color: colorScheme.outline.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ))
+                        )
                       else
                         Text(
-                          'Free / Included', 
-                          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14)
+                          'Free / Included',
+                          style: TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontSize: 14,
+                          ),
                         ),
                     ],
                   ),
                 ),
-                
+
                 _InfoSection(
                   icon: LucideIcons.utensils,
                   title: 'Meal Inclusions',
                   content: Text(
                     destination.mealInclusions,
-                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), fontSize: 16),
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                      fontSize: 16,
+                    ),
                   ),
                 ),
-                
+
                 _InfoSection(
                   icon: LucideIcons.stickyNote,
                   title: 'Travel Notes',
                   content: Text(
                     destination.travelNotes,
-                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.8), height: 1.5),
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.8),
+                      height: 1.5,
+                    ),
                   ),
                 ),
-                
+
                 _InfoSection(
                   icon: LucideIcons.map,
                   title: 'Location Map',
@@ -231,26 +320,24 @@ class DestinationDetailsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
+                      border: Border.all(
+                        color: colorScheme.outline.withValues(alpha: 0.1),
+                      ),
                     ),
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(LucideIcons.mapPin, size: 40, color: colorScheme.onSurface.withValues(alpha: 0.2)),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${destination.coordinates.lat.toStringAsFixed(4)}, ${destination.coordinates.lng.toStringAsFixed(4)}',
-                            style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
-                          ),
-                        ],
+                      child: DestinationMapWidget(
+                        destinationName: destination.name,
+                        coordinates: LatLng(
+                          destination.coordinates.lat,
+                          destination.coordinates.lng,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 SizedBox(
                   width: double.infinity,
                   height: 60,
@@ -266,11 +353,14 @@ class DestinationDetailsPage extends StatelessWidget {
                     ),
                     child: const Text(
                       'Generate This Plan',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
               ]),
             ),
@@ -303,7 +393,7 @@ class _InfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 32),
       child: Column(
@@ -339,7 +429,7 @@ class _TravelTypeModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -363,12 +453,19 @@ class _TravelTypeModal extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             'How are you traveling?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Choose your travel mode to customize your itinerary',
-            style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 16),
+            style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 16,
+            ),
           ),
           const SizedBox(height: 32),
           _TravelTypeButton(
@@ -377,10 +474,10 @@ class _TravelTypeModal extends StatelessWidget {
             icon: LucideIcons.user,
             onTap: () {
               Navigator.pop(context);
-              context.push('/ai-planner', extra: {
-                'destination': destination,
-                'isSolo': true,
-              });
+              context.push(
+                '/ai-planner',
+                extra: {'destination': destination, 'isSolo': true},
+              );
             },
           ),
           const SizedBox(height: 16),
@@ -390,10 +487,10 @@ class _TravelTypeModal extends StatelessWidget {
             icon: LucideIcons.users,
             onTap: () {
               Navigator.pop(context);
-              context.push('/ai-planner', extra: {
-                'destination': destination,
-                'isSolo': false,
-              });
+              context.push(
+                '/ai-planner',
+                extra: {'destination': destination, 'isSolo': false},
+              );
             },
           ),
           const SizedBox(height: 24),
@@ -447,17 +544,27 @@ class _TravelTypeButton extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(LucideIcons.chevronRight, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+            Icon(
+              LucideIcons.chevronRight,
+              color: colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
           ],
         ),
       ),
@@ -471,7 +578,7 @@ class _BudgetRow extends StatelessWidget {
   final bool showDivider;
 
   const _BudgetRow({
-    required this.label, 
+    required this.label,
     required this.value,
     this.showDivider = false,
   });
@@ -479,25 +586,25 @@ class _BudgetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label, 
+            label,
             style: TextStyle(
-              color: colorScheme.onSurface.withValues(alpha: 0.6), 
-              fontSize: 13, 
-              fontWeight: FontWeight.w500
-            )
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
-            value, 
+            value,
             style: TextStyle(
-              fontWeight: FontWeight.bold, 
+              fontWeight: FontWeight.bold,
               fontSize: 15,
               color: colorScheme.onSurface,
             ),

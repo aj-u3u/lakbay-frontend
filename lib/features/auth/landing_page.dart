@@ -18,10 +18,7 @@ class LandingPage extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              primaryColor,
-              primaryColor.withValues(alpha: 0.8),
-            ],
+            colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
           ),
         ),
         child: SafeArea(
@@ -72,7 +69,9 @@ class LandingPage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 48), // Dummy just to keep same structure if needed, but not needed here
+                const SizedBox(
+                  height: 48,
+                ), // Dummy just to keep same structure if needed, but not needed here
                 SizedBox(
                   width: double.infinity,
                   height: 56,

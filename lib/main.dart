@@ -9,11 +9,8 @@ final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    const ProviderScope(
-      child: LakbayPlusApp(),
-    ),
-  );
+
+  runApp(const ProviderScope(child: LakbayPlusApp()));
 }
 
 class LakbayPlusApp extends ConsumerWidget {
@@ -22,7 +19,7 @@ class LakbayPlusApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    
+
     return MaterialApp.router(
       title: 'Lakbay+',
       theme: AppTheme.lightTheme,

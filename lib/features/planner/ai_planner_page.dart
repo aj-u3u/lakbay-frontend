@@ -169,7 +169,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
 
           Timer(const Duration(seconds: 2), () {
             _addMessage(
-              "Here are 3 personalized itinerary options for your trip:",
+              "Here are 3 personalized itinerary options for your trip: Please click on each options to view the full itinerary",
               Sender.ai,
               options: [
                 "Budget-Friendly Plan - ${_plannerData['duration']}, ₱${_plannerData['budget']}",
@@ -237,6 +237,8 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
     Timer(const Duration(milliseconds: 800), () {
       if (option == "Customize itinerary") {
         _addMessage("Coming soon: Itinerary customization! For now, let's finalize this adventure.", Sender.ai);
+        // Let's add a logic here for the UI if the user selects a customized itinerary
+        
         Timer(const Duration(seconds: 1), () => context.pop());
       } else {
         _addMessage("Excellent! Your ${widget.isSolo ? 'trip' : 'group trip'} has been finalized.", Sender.ai);

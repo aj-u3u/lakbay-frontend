@@ -25,10 +25,23 @@ class PlannerItineraryDay {
 class PlannerCostItem {
   String category;
   String amount;
+  String overnightFee;
+  String entranceFee;
+  String transportationFee;
+  String foodFee;
+
+  List<PlannerAccommodationOption>? accommodations;
+  List<PlannerActivityPrice>? activityPrices;
 
   PlannerCostItem({
     required this.category,
     required this.amount,
+    required this.overnightFee,
+    required this.entranceFee,
+    required this.transportationFee,
+    required this.foodFee,
+    this.accommodations,
+    this.activityPrices,
   });
 }
 
@@ -50,4 +63,23 @@ class PlannerItineraryPlan {
     required this.costBreakdown,
     required this.itinerary,
   });
+}
+
+class PlannerAccommodationOption {
+  final String type;
+  final String price;
+  final String description;
+
+  PlannerAccommodationOption({
+    required this.type,
+    required this.price,
+    required this.description,
+  });
+}
+
+class PlannerActivityPrice {
+  final String name;
+  final String price;
+
+  PlannerActivityPrice({required this.name, required this.price});
 }
