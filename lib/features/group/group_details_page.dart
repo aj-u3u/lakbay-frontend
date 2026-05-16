@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../shared/data/groups_data.dart';
 import '../../shared/models/group_trip.dart';
 
@@ -20,6 +21,9 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
   int? _expandedDay = 1;
   List<GroupMember> _members = [];
   late GroupBudget _budget;
+  List<String> _notes = [];
+  List<String> _photos = [];
+  List<GroupTask> _tasks = [];
   bool _isInitialized = false;
 
   @override
@@ -40,11 +44,161 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
       
       _members = List<GroupMember>.from(group.members as dynamic ?? <GroupMember>[]);
       _budget = group.budget;
+      _notes = List<String>.from(group.notes as dynamic ?? <String>[]);
+      _photos = List<String>.from(group.photos as dynamic ?? <String>[]);
+      _tasks = List<GroupTask>.from(group.tasks as dynamic ?? <GroupTask>[]);
       _isInitialized = true;
     } catch (e) {
       _members = [];
       _budget = GroupBudget(total: 0, perPerson: 0, spent: 0, categories: []);
+      _notes = [];
+      _photos = [];
+      _tasks = [];
       _isInitialized = true;
+    }
+  }
+
+  void _showAddTaskDialog() {
+    final titleController = TextEditingController();
+    String selectedMember = _members.isNotEmpty ? _members.first.name : 'Unassigned';
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Add Task'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'What needs to be done?',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedMember,
+                decoration: const InputDecoration(
+                  labelText: 'Assign to',
+                  border: OutlineInputBorder(),
+                ),
+                items: _members.map((m) => DropdownMenuItem(
+                  value: m.name,
+                  child: Text(m.name),
+                )).toList(),
+                onChanged: (val) => setDialogState(() => selectedMember = val!),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () {
+                if (titleController.text.trim().isNotEmpty) {
+                  setState(() {
+                    _tasks.add(GroupTask(
+                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      title: titleController.text.trim(),
+                      assignedTo: selectedMember,
+                      completed: false,
+                    ));
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _toggleTask(int index) {
+    setState(() {
+      _tasks[index] = GroupTask(
+        id: _tasks[index].id,
+        title: _tasks[index].title,
+        assignedTo: _tasks[index].assignedTo,
+        completed: !_tasks[index].completed,
+      );
+    });
+  }
+
+  void _deleteTask(int index) {
+    setState(() {
+      _tasks.removeAt(index);
+    });
+  }
+
+  void _showNoteDialog({String? existingNote, int? index}) {
+    final noteController = TextEditingController(text: existingNote);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(existingNote == null ? 'Add Note' : 'Edit Note'),
+        content: TextField(
+          controller: noteController,
+          maxLines: 3,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Enter your travel note...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () {
+              if (noteController.text.trim().isNotEmpty) {
+                setState(() {
+                  if (index == null) {
+                    _notes.insert(0, noteController.text.trim());
+                  } else {
+                    _notes[index] = noteController.text.trim();
+                  }
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteNote(int index) {
+    setState(() {
+      _notes.removeAt(index);
+    });
+  }
+
+  Future<void> _showPhotoDialog() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _photos.insert(0, image.path);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to access gallery')),
+        );
+      }
     }
   }
 
@@ -209,7 +363,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
     final secondaryColor = colorScheme.secondary;
     final leader = _members.firstWhere((m) => m.isLeader, orElse: () => _members.isNotEmpty ? _members.first : GroupMember(id: '', name: 'N/A', avatar: '', isLeader: true, contribution: 0, spent: 0));
     final teamMembers = _members.where((m) => !m.isLeader).toList();
-    final completedTasks = (group.tasks ?? []).where((t) => t.completed).length;
+    final completedTasksCount = _tasks.where((t) => t.completed).length;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -356,7 +510,7 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                           physics: const NeverScrollableScrollPhysics(),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            childAspectRatio: 3,
+                            mainAxisExtent: 50, // Fixed height per item for stability
                             crossAxisSpacing: 10,
                             mainAxisSpacing: 10,
                           ),
@@ -382,6 +536,247 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                     ),
                   ),
 
+                  _CardContainer(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(LucideIcons.squareCheck, size: 20, color: secondaryColor),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Group Tasks (${completedTasksCount}/${_tasks.length})',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                ),
+                              ],
+                            ),
+                            _SmallIconButton(
+                              icon: LucideIcons.plus, 
+                              onTap: _showAddTaskDialog,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        if (_tasks.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text('No tasks assigned yet', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))),
+                            ),
+                          ),
+                        ..._tasks.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final task = entry.value;
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: colorScheme.onSurface.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () => _toggleTask(index),
+                                  child: Icon(
+                                    task.completed ? LucideIcons.circleCheck : LucideIcons.circle,
+                                    color: task.completed ? secondaryColor : colorScheme.onSurface.withValues(alpha: 0.3),
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        task.title,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          decoration: task.completed ? TextDecoration.lineThrough : null,
+                                          color: task.completed ? colorScheme.onSurface.withValues(alpha: 0.4) : colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      Text(
+                                        task.assignedTo, 
+                                        style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.5))
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(LucideIcons.trash2, size: 16),
+                                  onPressed: () => _deleteTask(index),
+                                  color: Colors.red.withValues(alpha: 0.3),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+
+                  // Travel Notes Section
+                  _CardContainer(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(LucideIcons.stickyNote, size: 20, color: secondaryColor),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Travel Notes', 
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                                ),
+                              ],
+                            ),
+                            _SmallIconButton(
+                              icon: LucideIcons.plus, 
+                              onTap: () => _showNoteDialog(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        if ((_notes ?? []).length == 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Center(
+                              child: Text(
+                                'No notes added yet', 
+                                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))
+                              ),
+                            ),
+                          ),
+                        ...(_notes ?? []).asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final note = entry.value;
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4.0),
+                                  child: Text('•', style: TextStyle(color: secondaryColor, fontSize: 18)),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    note,
+                                    style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(LucideIcons.pencil, size: 14),
+                                      onPressed: () => _showNoteDialog(existingNote: note, index: index),
+                                      color: colorScheme.onSurface.withValues(alpha: 0.3),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    IconButton(
+                                      icon: const Icon(LucideIcons.trash2, size: 14),
+                                      onPressed: () => _deleteNote(index),
+                                      color: Colors.red.withValues(alpha: 0.3),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+
+                  // Photo Memories Section
+                  _CardContainer(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(LucideIcons.camera, size: 20, color: secondaryColor),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Photo Memories', 
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+                                ),
+                              ],
+                            ),
+                            _SmallIconButton(
+                              icon: LucideIcons.plus, 
+                              onTap: _showPhotoDialog,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        if ((_photos ?? []).length == 0)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20),
+                            child: Column(
+                              children: [
+                                Center(
+                                  child: Icon(
+                                    LucideIcons.image, 
+                                    size: 48, 
+                                    color: colorScheme.onSurface.withValues(alpha: 0.1)
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'No photos uploaded yet', 
+                                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))
+                                ),
+                              ],
+                            ),
+                          ),
+                        if ((_photos ?? []).length > 0)
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: 8,
+                              mainAxisSpacing: 8,
+                              mainAxisExtent: 100, // Fixed height for photo cells
+                            ),
+                            itemCount: _photos.length,
+                            itemBuilder: (context, index) => ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                _photos[index],
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: colorScheme.onSurface.withValues(alpha: 0.05),
+                                  child: const Icon(LucideIcons.imageOff, color: Colors.grey),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -391,12 +786,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                           isActive: _activeTab == 'itinerary',
                           color: secondaryColor,
                           onTap: () => setState(() => _activeTab = 'itinerary'),
-                        ),
-                        _TabButton(
-                          label: 'Tasks',
-                          isActive: _activeTab == 'tasks',
-                          color: secondaryColor,
-                          onTap: () => setState(() => _activeTab = 'tasks'),
                         ),
                         _TabButton(
                           label: 'Route',
@@ -422,67 +811,6 @@ class _GroupDetailsPageState extends ConsumerState<GroupDetailsPage> {
                       onTap: () => setState(() => _expandedDay = _expandedDay == day.day ? null : day.day),
                     )),
                   
-                  if (_activeTab == 'tasks')
-                    _CardContainer(
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(LucideIcons.squareCheck, size: 20, color: secondaryColor),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'Tasks ($completedTasks/${(group.tasks ?? []).length})',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          ...(group.tasks ?? []).map((task) => Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: colorScheme.onSurface.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  task.completed ? LucideIcons.circleCheck : LucideIcons.circle,
-                                  color: task.completed ? secondaryColor : colorScheme.onSurface.withValues(alpha: 0.3),
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        task.title,
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          decoration: task.completed ? TextDecoration.lineThrough : null,
-                                          color: task.completed ? colorScheme.onSurface.withValues(alpha: 0.4) : colorScheme.onSurface,
-                                        ),
-                                      ),
-                                      Text(
-                                        task.assignedTo, 
-                                        style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withValues(alpha: 0.5))
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )),
-                        ],
-                      ),
-                    ),
-
                   if (_activeTab == 'route')
                     _CardContainer(
                       child: Column(
