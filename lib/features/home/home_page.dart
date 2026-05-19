@@ -626,6 +626,8 @@ class _TrendingCard extends StatelessWidget {
             ],
             Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -634,6 +636,8 @@ class _TrendingCard extends StatelessWidget {
             if (subtitle != null)
               Text(
                 subtitle!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.8),
                   fontSize: 12,
@@ -689,6 +693,8 @@ class _WeekendCard extends StatelessWidget {
           const Spacer(),
           Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -698,6 +704,8 @@ class _WeekendCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             subtitle,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.8),
               fontSize: 12,
@@ -706,6 +714,8 @@ class _WeekendCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             info,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 12,

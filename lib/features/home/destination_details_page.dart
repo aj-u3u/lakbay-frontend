@@ -95,9 +95,10 @@ class DestinationDetailsPage extends StatelessWidget {
           ),
 
           SliverPadding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
+                // 1. Destination Name (not in a card)
                 Text(
                   destination.name,
                   style: TextStyle(
@@ -107,6 +108,8 @@ class DestinationDetailsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
+
+                // 2. Location (not in a card)
                 Row(
                   children: [
                     Icon(
@@ -128,59 +131,130 @@ class DestinationDetailsPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                _InfoSection(
+                // 3. Operating Hours (in a card)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(LucideIcons.clock, color: primaryColor, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildOperatingHoursContent(
+                          destination.operatingHours,
+                          colorScheme,
+                          TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: colorScheme.onSurface,
+                            fontSize: 15,
+                          ),
+                          TextStyle(
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 4. About / Description (in a card)
+                _buildCard(
+                  context: context,
                   icon: LucideIcons.info,
                   title: 'About',
-                  content: Text(
+                  child: Text(
                     destination.description,
                     style: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.8),
-                      height: 1.5,
+                      fontSize: 14,
+                      height: 1.6,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
 
-                // Budget Breakdown Section (Moved below About)
-                _InfoSection(
+                // 5. Budget Breakdown (in a card)
+                _buildCard(
+                  context: context,
                   icon: LucideIcons.wallet,
                   title: 'Budget Breakdown',
-                  content: Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _BudgetRow(
-                        label: 'Entrance Fee',
-                        value: destination.entranceFee,
-                        showDivider: true,
-                      ),
-                      _BudgetRow(
-                        label: 'Overnight Fee',
-                        value: destination.overnightFee ?? 'Not required / N/A',
-                        showDivider: true,
-                      ),
-
-                      const SizedBox(height: 16),
                       Text(
-                        'Accommodation Options',
+                        'ENTRANCE FEE',
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        destination.entranceFee,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontSize: 15,
                           color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      if (destination.accommodations != null &&
-                          destination.accommodations!.isNotEmpty)
-                        ...destination.accommodations!.map(
-                          (acc) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Column(
+                      Divider(color: colorScheme.outline.withValues(alpha: 0.15)),
+                      const SizedBox(height: 12),
+                      Text(
+                        'OVERNIGHT FEE',
+                        style: TextStyle(
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        destination.overnightFee ?? 'Not required / N/A',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 6. Accommodation Options (in a card)
+                _buildCard(
+                  context: context,
+                  icon: Icons.hotel,
+                  title: 'Accommodation Options',
+                  child: destination.accommodations != null &&
+                          destination.accommodations!.isNotEmpty
+                      ? Column(
+                          children: destination.accommodations!.asMap().entries.map((entry) {
+                            final idx = entry.key;
+                            final acc = entry.value;
+                            return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   acc.type,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                    fontSize: 16,
                                     color: colorScheme.onSurface,
                                   ),
                                 ),
@@ -197,134 +271,256 @@ class DestinationDetailsPage extends StatelessWidget {
                                 Text(
                                   acc.description,
                                   style: TextStyle(
-                                    color: colorScheme.onSurface.withValues(
-                                      alpha: 0.6,
-                                    ),
+                                    color: colorScheme.onSurface.withValues(alpha: 0.6),
                                     fontSize: 13,
                                   ),
                                   softWrap: true,
                                   overflow: TextOverflow.visible,
                                 ),
-                                const SizedBox(height: 8),
-                                Divider(
-                                  color: colorScheme.outline.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                ),
+                                if (idx < destination.accommodations!.length - 1) ...[
+                                  const SizedBox(height: 12),
+                                  Divider(color: colorScheme.outline.withValues(alpha: 0.15)),
+                                  const SizedBox(height: 12),
+                                ],
                               ],
-                            ),
-                          ),
+                            );
+                          }).toList(),
                         )
-                      else
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
+                      : Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
                             'No accommodation available',
                             style: TextStyle(
-                              color: colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
                               fontSize: 14,
                             ),
                           ),
                         ),
+                ),
 
-                      const SizedBox(height: 8),
-                      Text(
-                        'Activity Prices',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      if (destination.activityPrices != null &&
-                          destination.activityPrices!.isNotEmpty)
-                        ...destination.activityPrices!.map(
-                          (ap) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12.0),
-                            child: Column(
+                // 7. Meal Inclusions (in a card) - Moved here below Accommodation Options
+                _buildCard(
+                  context: context,
+                  icon: LucideIcons.utensils,
+                  title: 'Meal Inclusions',
+                  child: Text(
+                    destination.mealInclusions,
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+
+                // 8. Activity Prices (in a card)
+                _buildCard(
+                  context: context,
+                  icon: LucideIcons.star,
+                  title: 'Activity Prices',
+                  child: destination.activityPrices != null &&
+                          destination.activityPrices!.isNotEmpty
+                      ? Column(
+                          children: destination.activityPrices!.asMap().entries.map((entry) {
+                            final idx = entry.key;
+                            final ap = entry.value;
+                            return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   ap.name,
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
                                     color: colorScheme.onSurface,
+                                    fontSize: 15,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   '${ap.price} ${ap.isPerPerson ? '/ person' : '/ group'}',
                                   style: TextStyle(
-                                    color: colorScheme.onSurface,
-                                    fontWeight: FontWeight.w500,
+                                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                    fontSize: 14,
                                   ),
                                   softWrap: true,
                                   overflow: TextOverflow.visible,
                                 ),
-                                const SizedBox(height: 8),
-                                if (destination.activityPrices!.last != ap)
-                                  Divider(
-                                    color: colorScheme.outline.withValues(
-                                      alpha: 0.1,
-                                    ),
-                                  ),
+                                if (idx < destination.activityPrices!.length - 1) ...[
+                                  const SizedBox(height: 12),
+                                  Divider(color: colorScheme.outline.withValues(alpha: 0.15)),
+                                  const SizedBox(height: 12),
+                                ],
                               ],
-                            ),
-                          ),
+                            );
+                          }).toList(),
                         )
-                      else
-                        Text(
+                      : Text(
                           'Free / Included',
                           style: TextStyle(
                             color: colorScheme.onSurface.withValues(alpha: 0.6),
                             fontSize: 14,
                           ),
                         ),
+                ),
+
+                // 9. Best Time to Visit (in a card)
+                _buildCard(
+                  context: context,
+                  icon: LucideIcons.sun,
+                  title: 'Best Time to Visit',
+                  child: Text(
+                    destination.bestTimeToVisit,
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.6,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ),
+
+                // 10. How to Get There (in a card)
+                _buildCard(
+                  context: context,
+                  icon: LucideIcons.car,
+                  title: 'How to Get There',
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        destination.howToGetThere,
+                        style: TextStyle(
+                          fontSize: 13,
+                          height: 1.6,
+                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.clock,
+                            size: 16,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
+                                children: [
+                                  const TextSpan(
+                                    text: 'Estimated Travel Time: ',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  TextSpan(text: destination.estimatedTravelTime),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
 
-                _InfoSection(
-                  icon: LucideIcons.utensils,
-                  title: 'Meal Inclusions',
-                  content: Text(
-                    destination.mealInclusions,
+                // 11. What to Bring (in a card)
+                _buildCard(
+                  context: context,
+                  icon: LucideIcons.briefcase,
+                  title: 'What to Bring',
+                  child: Column(
+                    children: destination.whatToBring.map((item) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '✓',
+                              style: TextStyle(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                item,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  height: 1.6,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // 12. Meal Information (in a card)
+                _buildCard(
+                  context: context,
+                  icon: LucideIcons.soup,
+                  title: 'Meal Information',
+                  child: Text(
+                    destination.mealPlanDetails,
                     style: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.8),
-                      fontSize: 16,
+                      fontSize: 13,
+                      height: 1.6,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
 
-                _InfoSection(
+                // 13. Accessibility & Suitability (in a card)
+                _buildCard(
+                  context: context,
+                  icon: LucideIcons.accessibility,
+                  title: 'Accessibility & Suitability',
+                  child: Column(
+                    children: [
+                      _buildAccessibilityRow('Kid-Friendly', destination.accessibility.isKidFriendly, Icons.child_care, colorScheme),
+                      Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
+                      _buildAccessibilityRow('Wheelchair Accessible', destination.accessibility.isWheelchairAccessible, Icons.accessible, colorScheme),
+                      Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
+                      _buildAccessibilityRow('Pet-Friendly', destination.accessibility.isPetFriendly, Icons.pets, colorScheme),
+                      Divider(color: colorScheme.outline.withValues(alpha: 0.15), height: 1),
+                      _buildAccessibilityRow('Elderly-Friendly', destination.accessibility.isElderlyFriendly, Icons.elderly, colorScheme),
+                    ],
+                  ),
+                ),
+
+                // 14. Travel Notes (in a card)
+                _buildCard(
+                  context: context,
                   icon: LucideIcons.stickyNote,
                   title: 'Travel Notes',
-                  content: Text(
+                  child: Text(
                     destination.travelNotes,
                     style: TextStyle(
-                      color: colorScheme.onSurface.withValues(alpha: 0.8),
-                      height: 1.5,
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontSize: 14,
+                      height: 1.6,
                     ),
                   ),
                 ),
 
-                _InfoSection(
+                // 15. Location Map (in a card)
+                _buildCard(
+                  context: context,
                   icon: LucideIcons.map,
                   title: 'Location Map',
-                  content: Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: colorScheme.outline.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      height: 200,
+                      width: double.infinity,
                       child: DestinationMapWidget(
                         destinationName: destination.name,
                         coordinates: LatLng(
@@ -379,47 +575,6 @@ class DestinationDetailsPage extends StatelessWidget {
   }
 }
 
-class _InfoSection extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Widget content;
-
-  const _InfoSection({
-    required this.icon,
-    required this.title,
-    required this.content,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 20, color: colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          content,
-        ],
-      ),
-    );
-  }
-}
 
 class _TravelTypeModal extends StatelessWidget {
   final Destination destination;
@@ -436,65 +591,67 @@ class _TravelTypeModal extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurface.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(2),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'How are you traveling?',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
+            const SizedBox(height: 24),
+            Text(
+              'How are you traveling?',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Choose your travel mode to customize your itinerary',
-            style: TextStyle(
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
-              fontSize: 16,
+            const SizedBox(height: 8),
+            Text(
+              'Choose your travel mode to customize your itinerary',
+              style: TextStyle(
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
+                fontSize: 16,
+              ),
             ),
-          ),
-          const SizedBox(height: 32),
-          _TravelTypeButton(
-            title: 'Solo Adventure',
-            subtitle: 'Personalized pace and activities',
-            icon: LucideIcons.user,
-            onTap: () {
-              Navigator.pop(context);
-              context.push(
-                '/ai-planner',
-                extra: {'destination': destination, 'isSolo': true},
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          _TravelTypeButton(
-            title: 'Group Trip',
-            subtitle: 'Collaborative planning for groups',
-            icon: LucideIcons.users,
-            onTap: () {
-              Navigator.pop(context);
-              context.push(
-                '/ai-planner',
-                extra: {'destination': destination, 'isSolo': false},
-              );
-            },
-          ),
-          const SizedBox(height: 24),
-        ],
+            const SizedBox(height: 32),
+            _TravelTypeButton(
+              title: 'Solo Adventure',
+              subtitle: 'Personalized pace and activities',
+              icon: LucideIcons.user,
+              onTap: () {
+                Navigator.pop(context);
+                context.push(
+                  '/ai-planner',
+                  extra: {'destination': destination, 'isSolo': true},
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            _TravelTypeButton(
+              title: 'Group Trip',
+              subtitle: 'Collaborative planning for groups',
+              icon: LucideIcons.users,
+              onTap: () {
+                Navigator.pop(context);
+                context.push(
+                  '/ai-planner',
+                  extra: {'destination': destination, 'isSolo': false},
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -572,51 +729,124 @@ class _TravelTypeButton extends StatelessWidget {
   }
 }
 
-class _BudgetRow extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool showDivider;
 
-  const _BudgetRow({
-    required this.label,
-    required this.value,
-    this.showDivider = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
+Widget _buildAccessibilityRow(
+  String label,
+  bool isAvailable,
+  IconData icon,
+  ColorScheme colorScheme,
+) {
+  return SizedBox(
+    height: 44,
+    child: Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: isAvailable ? Colors.green : colorScheme.onSurface.withValues(alpha: 0.4),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
             label,
             style: TextStyle(
-              color: colorScheme.onSurface.withValues(alpha: 0.6),
               fontSize: 13,
-              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurface.withValues(alpha: 0.7),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 15,
-              color: colorScheme.onSurface,
-            ),
-            softWrap: true,
-            overflow: TextOverflow.visible,
+        ),
+        Text(
+          isAvailable ? 'Yes' : 'No',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.bold,
+            color: isAvailable ? Colors.green : colorScheme.onSurface.withValues(alpha: 0.4),
           ),
-          if (showDivider) ...[
-            const SizedBox(height: 12),
-            Divider(color: colorScheme.outline.withValues(alpha: 0.1)),
-          ],
-        ],
-      ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildOperatingHoursContent(
+  String operatingHours,
+  ColorScheme colorScheme,
+  TextStyle boldStyle,
+  TextStyle mutedStyle,
+) {
+  if (operatingHours.contains('Mondays - Saturdays') || operatingHours.contains('Mon - Sat')) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Mon - Sat', style: boldStyle),
+        Text('8:00 AM - 5:00 PM', style: mutedStyle),
+        const SizedBox(height: 8),
+        Text('Sunday', style: boldStyle),
+        Text('8:00 AM - 12:00 NN', style: mutedStyle),
+      ],
+    );
+  } else if (operatingHours.toLowerCase().contains('24 hours')) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('All Days', style: boldStyle),
+        Text('Open 24 Hours', style: mutedStyle),
+      ],
+    );
+  } else {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Daily Hours', style: boldStyle),
+        Text(operatingHours, style: mutedStyle),
+      ],
     );
   }
+}
+
+Widget _buildCard({
+  required BuildContext context,
+  required IconData icon,
+  required String title,
+  required Widget child,
+}) {
+  final colorScheme = Theme.of(context).colorScheme;
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.08),
+          blurRadius: 12,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: colorScheme.primary, size: 22),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        child,
+      ],
+    ),
+  );
 }

@@ -29,6 +29,7 @@ class PlannerCostItem {
   String entranceFee;
   String transportationFee;
   String foodFee;
+  String? operatingHours;
 
   List<PlannerAccommodationOption>? accommodations;
   List<PlannerActivityPrice>? activityPrices;
@@ -40,6 +41,7 @@ class PlannerCostItem {
     required this.entranceFee,
     required this.transportationFee,
     required this.foodFee,
+    this.operatingHours,
     this.accommodations,
     this.activityPrices,
   });
@@ -50,6 +52,9 @@ class PlannerItineraryPlan {
   String type; // budget, balanced, premium
   String totalCost;
   String duration;
+  String? destinationName;
+  String? destinationLocation;
+  String? destinationDescription;
   List<String> highlights;
   List<PlannerCostItem> costBreakdown;
   List<PlannerItineraryDay> itinerary;
@@ -59,6 +64,9 @@ class PlannerItineraryPlan {
     required this.type,
     required this.totalCost,
     required this.duration,
+    this.destinationName,
+    this.destinationLocation,
+    this.destinationDescription,
     required this.highlights,
     required this.costBreakdown,
     required this.itinerary,

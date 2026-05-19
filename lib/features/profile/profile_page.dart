@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../main.dart'; // For themeModeProvider
+import '../../app/api_service.dart';
 
 class PushNotificationsNotifier extends Notifier<bool> {
   @override
@@ -235,6 +236,12 @@ class ProfilePage extends ConsumerWidget {
                       subtitle: themeMode == ThemeMode.system ? 'System default' : (themeMode == ThemeMode.dark ? 'Dark' : 'Light'),
                       onTap: () => _showAppearanceModal(context, ref),
                     ),
+                    _SettingsItem(
+                      icon: LucideIcons.server,
+                      title: 'API Server Settings',
+                      subtitle: ref.watch(backendUrlProvider),
+                      onTap: () => _showApiSettingsModal(context, ref),
+                    ),
                   ],
                 ),
                 
@@ -381,6 +388,120 @@ class ProfilePage extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const _HelpModal(),
+    );
+  }
+
+  void _showApiSettingsModal(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const _ApiSettingsModal(),
+    );
+  }
+}
+
+class _ApiSettingsModal extends ConsumerStatefulWidget {
+  const _ApiSettingsModal();
+
+  @override
+  ConsumerState<_ApiSettingsModal> createState() => _ApiSettingsModalState();
+}
+
+class _ApiSettingsModalState extends ConsumerState<_ApiSettingsModal> {
+  late final TextEditingController _urlController;
+
+  @override
+  void initState() {
+    super.initState();
+    final currentUrl = ref.read(backendUrlProvider);
+    _urlController = TextEditingController(text: currentUrl);
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'API Server Settings',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Configure the base URL for the FastAPI backend. Use http://10.0.2.2:8000 for Android emulator, or http://localhost:8000 for iOS/web/desktop.',
+              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+            ),
+            const SizedBox(height: 24),
+            TextFormField(
+              controller: _urlController,
+              style: TextStyle(color: colorScheme.onSurface),
+              decoration: InputDecoration(
+                labelText: 'Backend base URL',
+                hintText: 'e.g., http://10.0.2.2:8000',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final newUrl = _urlController.text.trim();
+                  if (newUrl.isNotEmpty) {
+                    final navigator = Navigator.of(context);
+                    final messenger = ScaffoldMessenger.of(context);
+                    await ref.read(backendUrlProvider.notifier).setUrl(newUrl);
+                    if (mounted) {
+                      navigator.pop();
+                      messenger.showSnackBar(
+                        SnackBar(
+                          content: Text('Backend URL updated to: $newUrl'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Save Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
     );
   }
 }

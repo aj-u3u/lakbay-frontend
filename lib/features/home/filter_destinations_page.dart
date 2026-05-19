@@ -235,9 +235,13 @@ class _FilterDestinationCard extends StatelessWidget {
                     children: [
                       Icon(LucideIcons.mapPin, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 4),
-                      Text(
-                        destination.location,
-                        style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13),
+                      Expanded(
+                        child: Text(
+                          destination.location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 13),
+                        ),
                       ),
                     ],
                   ),

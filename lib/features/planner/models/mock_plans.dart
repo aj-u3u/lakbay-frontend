@@ -5,6 +5,9 @@ PlannerItineraryPlan getMockItineraryPlan(
   bool isGroupTrip,
   String duration,
   String destination,
+  String location,
+  String operatingHours,
+  String description,
 ) {
   if (type == 'budget') {
     return PlannerItineraryPlan(
@@ -12,6 +15,9 @@ PlannerItineraryPlan getMockItineraryPlan(
       type: 'budget',
       totalCost: isGroupTrip ? '₱4,500/person' : '₱4,500',
       duration: duration,
+      destinationName: destination,
+      destinationLocation: location,
+      destinationDescription: description,
       highlights: [
         'Affordable accommodations',
         'Local transportation',
@@ -26,6 +32,7 @@ PlannerItineraryPlan getMockItineraryPlan(
           entranceFee: '₱150',
           transportationFee: '₱250',
           foodFee: '₱300',
+          operatingHours: operatingHours,
           accommodations: [
             PlannerAccommodationOption(
               type: 'Backpacker Hostel',
@@ -71,6 +78,9 @@ PlannerItineraryPlan getMockItineraryPlan(
       type: 'premium',
       totalCost: isGroupTrip ? '₱15,000/person' : '₱15,000',
       duration: duration,
+      destinationName: destination,
+      destinationLocation: location,
+      destinationDescription: description,
       highlights: [
         'Luxury accommodations',
         'Private transfers',
@@ -85,6 +95,7 @@ PlannerItineraryPlan getMockItineraryPlan(
           entranceFee: '₱800',
           transportationFee: '₱1,200',
           foodFee: '₱1,000',
+          operatingHours: operatingHours,
           accommodations: [
             PlannerAccommodationOption(
               type: 'Ocean View Suite',
@@ -133,6 +144,9 @@ PlannerItineraryPlan getMockItineraryPlan(
     type: 'balanced',
     totalCost: isGroupTrip ? '₱8,500/person' : '₱8,500',
     duration: duration,
+    destinationName: destination,
+    destinationLocation: location,
+    destinationDescription: description,
     highlights: [
       'Comfortable hotel stay',
       'Mixed transport options',
@@ -147,6 +161,7 @@ PlannerItineraryPlan getMockItineraryPlan(
         entranceFee: '₱400',
         transportationFee: '₱500',
         foodFee: '₱600',
+        operatingHours: operatingHours,
         accommodations: [
           PlannerAccommodationOption(
             type: 'Standard Hotel',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../app/api_service.dart';
 
 final signupShowPasswordProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -19,6 +20,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isPasswordsMatch = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -42,8 +44,58 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     super.dispose();
   }
 
-  void _handleSignup() {
-    context.go('/home');
+  void _handleSignup() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final name = _nameController.text.trim();
+
+    if (email.isEmpty || password.isEmpty || name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill out all fields.')),
+      );
+      return;
+    }
+
+    if (password != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final apiService = ref.read(apiServiceProvider);
+      await apiService.register(email, password);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration successful! Please log in.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.go('/login');
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMsg = e.toString().replaceAll('Exception: ', '');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -75,6 +127,36 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Center(
+                          child: Container(
+                            width: 96,
+                            height: 96,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(40),
+                                  child: Image.asset(
+                                    'assets/images/logo.png',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         Text(
                           'Create Account',
                           style: TextStyle(
@@ -240,11 +322,13 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: _isPasswordsMatch && 
-                                      _passwordController.text.isNotEmpty && 
-                                      _confirmPasswordController.text.isNotEmpty
-                                ? _handleSignup
-                                : null,
+                            onPressed: _isLoading
+                                ? null
+                                : (_isPasswordsMatch &&
+                                        _passwordController.text.isNotEmpty &&
+                                        _confirmPasswordController.text.isNotEmpty
+                                    ? _handleSignup
+                                    : null),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               foregroundColor: Colors.white,
@@ -253,13 +337,22 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Text(
-                              'Create Account',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : const Text(
+                                    'Create Account',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                           ),
                         ),
                         const SizedBox(height: 24),

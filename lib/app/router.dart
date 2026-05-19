@@ -15,6 +15,7 @@ import '../features/group/group_details_page.dart';
 import '../features/planner/ai_planner_page.dart';
 import '../features/planner/itinerary_customize_page.dart';
 import '../features/planner/models/planner_models.dart';
+import '../features/planner/plan_details_page.dart';
 import '../features/profile/edit_profile_page.dart';
 import '../features/profile/settings_detail_page.dart';
 import '../features/home/notifications_page.dart';
@@ -88,6 +89,13 @@ final goRouter = GoRouter(
       builder: (context, state) {
         final plan = state.extra as PlannerItineraryPlan;
         return ItineraryCustomizePage(initialPlan: plan);
+      },
+    ),
+    GoRoute(
+      path: '/ai-plan-details',
+      builder: (context, state) {
+        final plan = state.extra as PlannerItineraryPlan;
+        return PlanDetailsPage(plan: plan);
       },
     ),
     StatefulShellRoute.indexedStack(

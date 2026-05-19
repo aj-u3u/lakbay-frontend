@@ -150,6 +150,8 @@ class DestinationPreviewModal extends StatelessWidget {
                         Expanded(
                           child: Text(
                             destination.location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               color: colorScheme.onSurface.withValues(
                                 alpha: 0.6,
@@ -163,15 +165,40 @@ class DestinationPreviewModal extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          LucideIcons.dollarSign,
+                          LucideIcons.philippinePeso,
                           size: 20,
                           color: colorScheme.onSurface.withValues(alpha: 0.4),
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          destination.entranceFee,
-                          style: TextStyle(
-                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        Expanded(
+                          child: Text(
+                            destination.entranceFee,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          LucideIcons.clock,
+                          size: 20,
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            destination.operatingHours,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
                           ),
                         ),
                       ],
@@ -180,6 +207,8 @@ class DestinationPreviewModal extends StatelessWidget {
 
                     Text(
                       destination.description,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: colorScheme.onSurface.withValues(alpha: 0.7),
                       ),

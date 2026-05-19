@@ -50,23 +50,66 @@ class ItineraryPreviewModal extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        plan.title,
+                        plan.destinationName ?? plan.title,
                         style: TextStyle(
                           color: onAccentColor,
-                          fontSize: 20,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        '${plan.duration} • ${plan.totalCost}',
-                        style: TextStyle(
-                          color: onAccentColor.withValues(alpha: 0.8),
-                          fontSize: 14,
+                      if (plan.destinationLocation != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(LucideIcons.mapPin, size: 14, color: onAccentColor.withValues(alpha: 0.8)),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                plan.destinationLocation!,
+                                style: TextStyle(
+                                  color: onAccentColor.withValues(alpha: 0.8),
+                                  fontSize: 13,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      if (plan.destinationDescription != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          plan.destinationDescription!,
+                          style: TextStyle(
+                            color: onAccentColor.withValues(alpha: 0.8),
+                            fontSize: 12,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: onAccentColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${plan.title} • ${plan.duration} • ${plan.totalCost}',
+                          style: TextStyle(
+                            color: onAccentColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
                   icon: Icon(LucideIcons.x, color: onAccentColor),
@@ -116,7 +159,7 @@ class ItineraryPreviewModal extends StatelessWidget {
 
                 // Cost Breakdown
                 _SectionHeader(
-                  icon: LucideIcons.dollarSign,
+                  icon: LucideIcons.philippinePeso,
                   title: 'Cost Breakdown',
                   color: accentColor,
                 ),
@@ -176,6 +219,12 @@ class ItineraryPreviewModal extends StatelessWidget {
                           spacing: 12,
                           runSpacing: 12,
                           children: [
+                            if (item.operatingHours != null)
+                              _CostChip(
+                                icon: LucideIcons.clock,
+                                label: "Hours",
+                                value: item.operatingHours!,
+                              ),
                             _CostChip(
                               icon: LucideIcons.ticket,
                               label: "Entrance",
@@ -459,12 +508,15 @@ class _CostChip extends StatelessWidget {
         children: [
           Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
           const SizedBox(width: 8),
-          Text(
-            "$label: $value",
-            style: TextStyle(
-              fontSize: 13,
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w500,
+          Flexible(
+            child: Text(
+              "$label: $value",
+              style: TextStyle(
+                fontSize: 13,
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w500,
+              ),
+              softWrap: true,
             ),
           ),
         ],

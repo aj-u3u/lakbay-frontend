@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'providers/itinerary_provider.dart';
 import 'models/planner_models.dart';
+import '../../shared/data/destinations_data.dart';
+import '../../shared/data/trips_data.dart';
+import '../../shared/models/trip.dart';
 
 class ItineraryCustomizePage extends ConsumerStatefulWidget {
   final PlannerItineraryPlan initialPlan;
@@ -349,6 +352,138 @@ class _ItineraryCustomizePageState extends ConsumerState<ItineraryCustomizePage>
     );
   }
 
+  void _saveTripToDashboard(BuildContext context, PlannerItineraryPlan plan, Color primaryColor) {
+    // 1. Attempt to find matched destination from destinations_data.dart
+    String matchedImage = 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'; // Default fallback
+    if (plan.destinationName != null) {
+      try {
+        final match = destinations.firstWhere(
+          (d) => d.name.toLowerCase() == plan.destinationName!.toLowerCase() ||
+                 plan.destinationName!.toLowerCase().contains(d.name.toLowerCase())
+        );
+        matchedImage = match.image;
+      } catch (_) {}
+    }
+
+    // 2. Parse total cost to double
+    double totalCostVal = 4500.0;
+    final costStr = plan.totalCost.replaceAll(RegExp(r'[^0-9]'), '');
+    if (costStr.isNotEmpty) {
+      totalCostVal = double.tryParse(costStr) ?? 4500.0;
+    }
+
+    // 3. Parse duration to integer days
+    int durationDays = 3;
+    final durStr = plan.duration.replaceAll(RegExp(r'[^0-9]'), '');
+    if (durStr.isNotEmpty) {
+      durationDays = int.tryParse(durStr) ?? 3;
+    }
+
+    // 4. Map cost breakdown to budget categories
+    final List<BudgetCategory> budgetCategories = [];
+    final categoryColors = {
+      'accommodation': '#60A5FA',
+      'stay': '#60A5FA',
+      'food': '#34D399',
+      'dining': '#34D399',
+      'transport': '#F59E0B',
+      'transportation': '#F59E0B',
+      'activity': '#A78BFA',
+      'activities': '#A78BFA',
+    };
+
+    for (final item in plan.costBreakdown) {
+      double itemAmount = 0.0;
+      final itemAmtStr = item.amount.replaceAll(RegExp(r'[^0-9]'), '');
+      if (itemAmtStr.isNotEmpty) {
+        itemAmount = double.tryParse(itemAmtStr) ?? 0.0;
+      }
+
+      final catLower = item.category.toLowerCase();
+      String hexColor = '#9CA3AF'; // Fallback gray
+      for (final entry in categoryColors.entries) {
+        if (catLower.contains(entry.key)) {
+          hexColor = entry.value;
+          break;
+        }
+      }
+
+      budgetCategories.add(
+        BudgetCategory(
+          name: item.category,
+          amount: itemAmount,
+          color: hexColor,
+        ),
+      );
+    }
+
+    // 5. Map itinerary days & activities
+    final List<ItineraryDay> tripItinerary = plan.itinerary.map((day) {
+      return ItineraryDay(
+        day: day.day,
+        title: day.title,
+        activities: day.activities.map((act) {
+          return TripActivity(
+            time: act.time,
+            activity: act.activity,
+            location: act.location,
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    // 6. Assemble the Trip entity
+    final newTrip = Trip(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: '${plan.destinationName ?? "Davao"} Adventure',
+      destination: plan.destinationLocation ?? 'Davao Region',
+      image: matchedImage,
+      startDate: DateTime.now().add(const Duration(days: 30)),
+      endDate: DateTime.now().add(Duration(days: 30 + durationDays - 1)),
+      summary: plan.destinationDescription ?? 'A customized AI itinerary for ${plan.destinationName ?? "your trip"}.',
+      budget: TripBudget(
+        total: totalCostVal,
+        spent: 0.0,
+        daily: totalCostVal / durationDays,
+        categories: budgetCategories,
+      ),
+      itinerary: tripItinerary,
+      transport: [
+        TransportInfo(
+          from: 'Davao City',
+          to: plan.destinationName ?? 'Destination',
+          mode: 'Private Transfer',
+          fare: plan.totalCost,
+          duration: plan.duration,
+        ),
+      ],
+      notes: plan.highlights,
+      photos: [],
+    );
+
+    // 7. Mutate final list to insert at the top
+    mockTrips.insert(0, newTrip);
+
+    // 8. Confirm with Success Toast
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.white),
+            SizedBox(width: 8),
+            Text('Customized trip saved successfully! 🎉'),
+          ],
+        ),
+        backgroundColor: primaryColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+
+    // 9. Navigate to /trip tab page
+    context.go('/trip');
+  }
+
   Widget _buildBottomButtons(BuildContext context, PlannerItineraryPlan plan, Color primaryColor) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -387,17 +522,7 @@ class _ItineraryCustomizePageState extends ConsumerState<ItineraryCustomizePage>
           const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
-              onPressed: () {
-                // Here we would normally save the plan to a repository
-                // For now, let's just show the snackbar and navigate
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Trip saved successfully! 🎉'),
-                    backgroundColor: primaryColor,
-                  ),
-                );
-                context.go('/trip');
-              },
+              onPressed: () => _saveTripToDashboard(context, plan, primaryColor),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,

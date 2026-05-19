@@ -7,6 +7,7 @@ import '../../shared/models/destination.dart';
 import 'models/planner_models.dart';
 import 'models/mock_plans.dart';
 import 'widgets/itinerary_preview_modal.dart';
+import '../../app/api_service.dart';
 
 enum Sender { ai, user }
 
@@ -58,6 +59,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
 
   final Map<String, String> _plannerData = {};
   PlannerItineraryPlan? _selectedPlan;
+  List<Map<String, dynamic>> _apiRecommendations = [];
 
   @override
   void initState() {
@@ -110,100 +112,226 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
     });
   }
 
+  bool _validateInput(String text) {
+    switch (_currentStep) {
+      case PlannerStep.budget:
+        final hasDigits = RegExp(r'\d').hasMatch(text);
+        if (!hasDigits) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Please enter a valid numeric budget (e.g., 5000 or 5000 PHP).'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+          return false;
+        }
+        break;
+      case PlannerStep.duration:
+        final hasDigits = RegExp(r'\d').hasMatch(text);
+        if (!hasDigits) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Please enter a valid number of days (e.g., 3 or 3 days).'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+          return false;
+        }
+        break;
+      case PlannerStep.groupSize:
+        final hasDigits = RegExp(r'\d').hasMatch(text);
+        if (!hasDigits) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Please enter a valid number of people (e.g., 4 or 4 people).'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+          );
+          return false;
+        }
+        break;
+      default:
+        break;
+    }
+    return true;
+  }
+
+  TextInputType _getKeyboardType() {
+    switch (_currentStep) {
+      case PlannerStep.budget:
+      case PlannerStep.duration:
+      case PlannerStep.groupSize:
+        return TextInputType.number;
+      default:
+        return TextInputType.text;
+    }
+  }
+
   void _handleSend() {
     if (_inputController.text.trim().isEmpty || _isGenerating) return;
     final text = _inputController.text.trim();
+    if (!_validateInput(text)) return;
     _inputController.clear();
     _handleNextStep(text);
   }
 
-  void _handleNextStep(String userInput) {
+  void _handleNextStep(String userInput) async {
     _addMessage(userInput, Sender.user);
 
-    Timer(const Duration(milliseconds: 800), () {
-      switch (_currentStep) {
-        case PlannerStep.destination:
-          _plannerData['destination'] = userInput;
-          _addMessage("Excellent choice! What's your budget for this trip? (e.g., ₱5,000)", Sender.ai);
-          setState(() => _currentStep = PlannerStep.budget);
-          break;
+    await Future.delayed(const Duration(milliseconds: 800));
 
-        case PlannerStep.budget:
-          _plannerData['budget'] = userInput;
-          _addMessage("When would you like to go? Please provide your travel date. (e.g., June 15, 2026)", Sender.ai);
-          setState(() => _currentStep = PlannerStep.date);
-          break;
+    switch (_currentStep) {
+      case PlannerStep.destination:
+        _plannerData['destination'] = userInput;
+        _addMessage("Excellent choice! What's your budget for this trip? (e.g., ₱5,000)", Sender.ai);
+        setState(() => _currentStep = PlannerStep.budget);
+        break;
 
-        case PlannerStep.date:
-          _plannerData['date'] = userInput;
-          _addMessage("How many days will you be staying? (e.g., 3 days)", Sender.ai);
-          setState(() => _currentStep = PlannerStep.duration);
-          break;
+      case PlannerStep.budget:
+        _plannerData['budget'] = userInput;
+        _addMessage("When would you like to go? Please provide your travel date. (e.g., June 15, 2026)", Sender.ai);
+        setState(() => _currentStep = PlannerStep.date);
+        break;
 
-        case PlannerStep.duration:
-          _plannerData['duration'] = userInput;
-          if (!widget.isSolo) {
-            _addMessage("How many people will be in your group? (e.g., 4 people)", Sender.ai);
-            setState(() => _currentStep = PlannerStep.groupSize);
-          } else {
-            _addMessage("Any specific preferences? (e.g., adventure, relaxation, food tours)", Sender.ai);
-            setState(() => _currentStep = PlannerStep.preferences);
-          }
-          break;
+      case PlannerStep.date:
+        _plannerData['date'] = userInput;
+        _addMessage("How many days will you be staying? (e.g., 3 days)", Sender.ai);
+        setState(() => _currentStep = PlannerStep.duration);
+        break;
 
-        case PlannerStep.groupSize:
-          _plannerData['groupSize'] = userInput;
-          _addMessage("Any specific preferences for your group? (e.g., adventure, relaxation)", Sender.ai);
+      case PlannerStep.duration:
+        _plannerData['duration'] = userInput;
+        if (!widget.isSolo) {
+          _addMessage("How many people will be in your group? (e.g., 4 people)", Sender.ai);
+          setState(() => _currentStep = PlannerStep.groupSize);
+        } else {
+          _addMessage("Any specific preferences? (e.g., adventure, relaxation, food tours)", Sender.ai);
           setState(() => _currentStep = PlannerStep.preferences);
-          break;
+        }
+        break;
 
-        case PlannerStep.preferences:
-          _plannerData['preferences'] = userInput;
-          setState(() {
-            _currentStep = PlannerStep.generating;
-            _isGenerating = true;
-          });
-          _addMessage(
-            "Perfect! I'm generating 3 ${widget.isSolo ? 'solo' : 'group'} travel options for ${_plannerData['destination'] ?? widget.destination?.name}. This will take just a moment... ✨",
-            Sender.ai,
-          );
+      case PlannerStep.groupSize:
+        _plannerData['groupSize'] = userInput;
+        _addMessage("Any specific preferences for your group? (e.g., adventure, relaxation)", Sender.ai);
+        setState(() => _currentStep = PlannerStep.preferences);
+        break;
 
-          Timer(const Duration(seconds: 2), () {
+      case PlannerStep.preferences:
+        _plannerData['preferences'] = userInput;
+        setState(() {
+          _currentStep = PlannerStep.generating;
+          _isGenerating = true;
+        });
+        _addMessage(
+          "Perfect! I'm calling the AI recommendations API to find the best spots for ${_plannerData['destination'] ?? widget.destination?.name ?? 'Davao'}... ✨",
+          Sender.ai,
+        );
+
+        try {
+          final destination = _plannerData['destination'] ?? widget.destination?.name ?? 'Davao';
+          final budget = _plannerData['budget'] ?? '5000';
+          final duration = _plannerData['duration'] ?? '3 days';
+          final date = _plannerData['date'] ?? 'anytime';
+          final groupSize = widget.isSolo ? '1 pax' : (_plannerData['groupSize'] ?? 'group');
+          final preferences = _plannerData['preferences'] ?? 'chill';
+
+          final prompt = "Plan a ${widget.isSolo ? 'solo' : 'group'} trip to $destination for $duration starting on $date with a budget of $budget, group size of $groupSize. Preferences: $preferences.";
+
+          final apiService = ref.read(apiServiceProvider);
+          final response = await apiService.getAIRecommendation(prompt);
+
+          final results = response['results'] as List<dynamic>?;
+
+          if (results == null || results.isEmpty) {
             _addMessage(
-              "Here are 3 personalized itinerary options for your trip: Please click on each options to view the full itinerary",
+              "No specific spots found in the database. Here are general options instead:",
               Sender.ai,
               options: [
-                "Budget-Friendly Plan - ${_plannerData['duration']}, ₱${_plannerData['budget']}",
-                "Balanced Experience - ${_plannerData['duration']}, ₱${_plannerData['budget']}",
-                "Premium Adventure - ${_plannerData['duration']}, ₱${_plannerData['budget']}",
+                "Budget-Friendly Plan - $duration, ₱$budget",
+                "Balanced Experience - $duration, ₱$budget",
+                "Premium Adventure - $duration, ₱$budget",
               ],
             );
-            setState(() {
-              _currentStep = PlannerStep.complete;
-              _isGenerating = false;
-            });
+          } else {
+            _apiRecommendations = results.map((r) => r as Map<String, dynamic>).toList();
+
+            final List<String> recommendedOptions = [];
+            for (var i = 0; i < _apiRecommendations.length; i++) {
+              final r = _apiRecommendations[i];
+              final name = r['name'] as String;
+              final cost = r['cost'] != null ? '₱${r['cost']}' : 'varies';
+              recommendedOptions.add("Option ${i + 1}: $name ($cost)");
+            }
+            // Add custom balanced option as fallback
+            recommendedOptions.add("Custom Balanced Experience");
+
+            _addMessage(
+              "Based on your preferences, the API recommends these top destinations. Please select one to view the itinerary details:",
+              Sender.ai,
+              options: recommendedOptions,
+            );
+          }
+        } catch (e) {
+          _addMessage(
+            "I couldn't reach the API backend (${e.toString().replaceAll('Exception: ', '')}). Here are standard options instead:",
+            Sender.ai,
+            options: [
+              "Budget-Friendly Plan - ${_plannerData['duration']}, ₱${_plannerData['budget']}",
+              "Balanced Experience - ${_plannerData['duration']}, ₱${_plannerData['budget']}",
+              "Premium Adventure - ${_plannerData['duration']}, ₱${_plannerData['budget']}",
+            ],
+          );
+        } finally {
+          setState(() {
+            _currentStep = PlannerStep.complete;
+            _isGenerating = false;
           });
-          break;
-        default:
-          break;
-      }
-    });
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   void _handleOptionSelect(String option) {
+    Map<String, dynamic>? selectedDest;
+    if (option.startsWith("Option ")) {
+      final match = RegExp(r'Option (\d+):').firstMatch(option);
+      if (match != null) {
+        final idx = int.parse(match.group(1)!) - 1;
+        if (idx >= 0 && idx < _apiRecommendations.length) {
+          selectedDest = _apiRecommendations[idx];
+        }
+      }
+    }
+
     String type = 'balanced';
-    if (option.contains('Budget-Friendly')) type = 'budget';
-    if (option.contains('Premium')) type = 'premium';
+    if (option.contains('Budget-Friendly') ||
+        (selectedDest != null && selectedDest['vibes'].toString().toLowerCase().contains('budget'))) {
+      type = 'budget';
+    }
+    if (option.contains('Premium') ||
+        (selectedDest != null && selectedDest['vibes'].toString().toLowerCase().contains('luxury'))) {
+      type = 'premium';
+    }
+
+    final String destName = selectedDest != null ? selectedDest['name'] : (_plannerData['destination'] ?? widget.destination?.name ?? 'Davao');
+    final String destLocation = selectedDest != null ? 'Davao Region' : (widget.destination?.location ?? 'Davao Region');
+    final String destDesc = selectedDest != null ? selectedDest['description'] : (widget.destination?.description ?? 'A wonderful place to visit in Davao Region.');
+    final String operatingHours = selectedDest != null ? '08:00 AM - 05:00 PM' : (widget.destination?.operatingHours ?? 'Varies by activity');
 
     final plan = getMockItineraryPlan(
       type,
       !widget.isSolo,
       _plannerData['duration'] ?? '3 days',
-      _plannerData['destination'] ?? widget.destination?.name ?? 'Davao',
+      destName,
+      destLocation,
+      operatingHours,
+      destDesc,
     );
 
     _selectedPlan = plan;
-    _showItineraryModal(plan);
+    context.push('/ai-plan-details', extra: plan);
   }
 
   void _showItineraryModal(PlannerItineraryPlan plan) {
@@ -240,7 +368,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
       if (option == "Customize itinerary" && _selectedPlan != null) {
         context.push('/customize-itinerary', extra: _selectedPlan);
       } else if (option == "View Itinerary" && _selectedPlan != null) {
-        _showItineraryModal(_selectedPlan!);
+        context.push('/ai-plan-details', extra: _selectedPlan);
       } else {
         _addMessage("Excellent! Your ${widget.isSolo ? 'trip' : 'group trip'} has been finalized.", Sender.ai);
         Timer(const Duration(seconds: 1), () => context.pop());
@@ -373,6 +501,7 @@ class _AIPlannerPageState extends ConsumerState<AIPlannerPage> {
                     controller: _inputController,
                     onSubmitted: (_) => _handleSend(),
                     style: TextStyle(color: colorScheme.onSurface),
+                    keyboardType: _getKeyboardType(),
                     enabled: !_isGenerating && 
                              _currentStep != PlannerStep.complete && 
                              _currentStep != PlannerStep.confirmation,

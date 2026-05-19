@@ -97,11 +97,15 @@ class DestinationCard extends StatelessWidget {
                     children: [
                       Icon(LucideIcons.mapPin, size: 14, color: colorScheme.onSurface.withValues(alpha: 0.6)),
                       const SizedBox(width: 4),
-                      Text(
-                        destination.district,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      Expanded(
+                        child: Text(
+                          destination.district,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurface.withValues(alpha: 0.6),
+                          ),
                         ),
                       ),
                     ],
