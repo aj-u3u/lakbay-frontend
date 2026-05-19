@@ -4,8 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../shared/data/trips_data.dart';
 import '../../shared/models/trip.dart';
+import '../../shared/data/destinations_data.dart';
+import '../../shared/models/destination.dart';
 
 class TripDetailsPage extends ConsumerStatefulWidget {
   final String id;
@@ -122,6 +126,228 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
         );
       }
     }
+  }
+
+  LatLng _getCenterLatLng(Trip trip) {
+    if (trip.destination.toLowerCase().contains('samal') || trip.name.toLowerCase().contains('samal')) {
+      return const LatLng(7.0833, 125.7167); // Samal
+    } else if (trip.destination.toLowerCase().contains('apo')) {
+      return const LatLng(7.0067, 125.2728); // Mt. Apo
+    } else if (trip.destination.toLowerCase().contains('eden')) {
+      return const LatLng(7.1907, 125.4553);
+    } else if (trip.destination.toLowerCase().contains('dahican')) {
+      return const LatLng(6.9544, 126.2331);
+    }
+    return const LatLng(7.0736, 125.6110); // Davao City
+  }
+
+  List<Marker> _getMarkers(Trip trip, Color primaryColor) {
+    final List<Marker> markers = [];
+    final Set<String> addedLocations = {};
+
+    LatLng defaultCenter = const LatLng(7.0736, 125.6110);
+    if (trip.destination.toLowerCase().contains('samal') || trip.name.toLowerCase().contains('samal')) {
+      defaultCenter = const LatLng(7.0833, 125.7167);
+    } else if (trip.destination.toLowerCase().contains('apo')) {
+      defaultCenter = const LatLng(7.0067, 125.2728);
+    }
+
+    for (var day in trip.itinerary) {
+      for (var act in day.activities) {
+        final loc = act.location.toLowerCase();
+        LatLng? coords;
+        String title = act.activity;
+        IconData icon = LucideIcons.mapPin;
+        Color markerColor = primaryColor;
+
+        if (loc.contains('hagimit')) {
+          coords = const LatLng(6.8667, 125.3333);
+          icon = LucideIcons.droplets;
+          markerColor = Colors.blue;
+          title = 'Hagimit Falls';
+        } else if (loc.contains('samal') || loc.contains('pearl farm')) {
+          coords = const LatLng(7.0833, 125.7167);
+          icon = LucideIcons.compass;
+          markerColor = Colors.orange;
+          title = 'Samal Island Beach';
+        } else if (loc.contains('apo')) {
+          coords = const LatLng(7.0067, 125.2728);
+          icon = LucideIcons.mountain;
+          markerColor = Colors.green;
+          title = 'Mt. Apo';
+        } else if (loc.contains('eagle')) {
+          coords = const LatLng(7.2333, 125.3667);
+          icon = LucideIcons.bird;
+          markerColor = Colors.red;
+          title = 'Philippine Eagle Center';
+        } else if (loc.contains('dahican') || loc.contains('mati')) {
+          coords = const LatLng(6.9544, 126.2331);
+          icon = LucideIcons.waves;
+          markerColor = Colors.teal;
+          title = 'Dahican Beach';
+        } else if (loc.contains('monfort')) {
+          coords = const LatLng(7.1333, 125.6500);
+          icon = LucideIcons.shield;
+          markerColor = Colors.purple;
+          title = 'Monfort Bat Sanctuary';
+        } else if (loc.contains('malagos')) {
+          coords = const LatLng(7.2500, 125.3833);
+          icon = LucideIcons.flower;
+          markerColor = Colors.pink;
+          title = 'Malagos Garden Resort';
+        } else if (loc.contains('eden')) {
+          coords = const LatLng(7.1907, 125.4553);
+          icon = LucideIcons.trees;
+          markerColor = Colors.green;
+          title = 'Eden Nature Park';
+        } else if (loc.contains('davao city') || loc.contains('sasa')) {
+          coords = const LatLng(7.0736, 125.6110);
+          icon = LucideIcons.mapPin;
+          markerColor = Colors.grey;
+          title = 'Davao City / Wharf';
+        }
+
+        if (coords != null && !addedLocations.contains(coords.toString())) {
+          addedLocations.add(coords.toString());
+          markers.add(
+            Marker(
+              point: coords,
+              width: 60,
+              height: 60,
+              child: GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(title),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: markerColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Icon(icon, color: Colors.white, size: 14),
+                    ),
+                    const SizedBox(height: 2),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(4),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black12, blurRadius: 2),
+                        ],
+                      ),
+                      child: Text(
+                        act.location,
+                        style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    if (markers.isEmpty) {
+      markers.add(
+        Marker(
+          point: defaultCenter,
+          width: 60,
+          height: 60,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Icon(LucideIcons.mapPin, color: Colors.white, size: 14),
+              ),
+              const SizedBox(height: 2),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  trip.destination,
+                  style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black87),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return markers;
+  }
+
+  List<Polyline> _getPolylines(Trip trip, Color primaryColor) {
+    final List<LatLng> points = [];
+    final Set<String> addedPoints = {};
+
+    for (var day in trip.itinerary) {
+      for (var act in day.activities) {
+        final loc = act.location.toLowerCase();
+        LatLng? coords;
+
+        if (loc.contains('hagimit')) {
+          coords = const LatLng(6.8667, 125.3333);
+        } else if (loc.contains('samal') || loc.contains('pearl farm')) {
+          coords = const LatLng(7.0833, 125.7167);
+        } else if (loc.contains('apo')) {
+          coords = const LatLng(7.0067, 125.2728);
+        } else if (loc.contains('eagle')) {
+          coords = const LatLng(7.2333, 125.3667);
+        } else if (loc.contains('dahican') || loc.contains('mati')) {
+          coords = const LatLng(6.9544, 126.2331);
+        } else if (loc.contains('monfort')) {
+          coords = const LatLng(7.1333, 125.6500);
+        } else if (loc.contains('malagos')) {
+          coords = const LatLng(7.2500, 125.3833);
+        } else if (loc.contains('eden')) {
+          coords = const LatLng(7.1907, 125.4553);
+        } else if (loc.contains('davao city') || loc.contains('sasa')) {
+          coords = const LatLng(7.0736, 125.6110);
+        }
+
+        if (coords != null && !addedPoints.contains(coords.toString())) {
+          addedPoints.add(coords.toString());
+          points.add(coords);
+        }
+      }
+    }
+
+    if (points.length < 2) return [];
+
+    return [
+      Polyline(
+        points: points,
+        strokeWidth: 4.0,
+        color: primaryColor,
+      ),
+    ];
   }
 
   @override
@@ -404,6 +630,11 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                           isActive: _activeTab == 'budget',
                           onTap: () => setState(() => _activeTab = 'budget'),
                         ),
+                        _TabButton(
+                          label: 'Destinations',
+                          isActive: _activeTab == 'destinations',
+                          onTap: () => setState(() => _activeTab = 'destinations'),
+                        ),
                       ],
                     ),
                   ),
@@ -433,26 +664,26 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          Container(
-                            height: 200,
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: colorScheme.onSurface.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: SizedBox(
+                              height: 250,
+                              width: double.infinity,
+                              child: FlutterMap(
+                                options: MapOptions(
+                                  initialCenter: _getCenterLatLng(trip),
+                                  initialZoom: 10.0,
+                                ),
                                 children: [
-                                  Icon(LucideIcons.mapPin, size: 40, color: colorScheme.onSurface.withValues(alpha: 0.2)),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    'Interactive Map of Davao Region', 
-                                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4))
+                                  TileLayer(
+                                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                    userAgentPackageName: 'com.lakbayplus.app',
                                   ),
-                                  Text(
-                                    'Optimized route for all destinations', 
-                                    style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)
+                                  PolylineLayer(
+                                    polylines: _getPolylines(trip, primaryColor),
+                                  ),
+                                  MarkerLayer(
+                                    markers: _getMarkers(trip, primaryColor),
                                   ),
                                 ],
                               ),
@@ -572,6 +803,265 @@ class _TripDetailsPageState extends ConsumerState<TripDetailsPage> {
                           ),
                         ],
                       ),
+                    ),
+
+                  if (_activeTab == 'destinations')
+                    Builder(
+                      builder: (context) {
+                        Destination? matchedDest;
+                        try {
+                          matchedDest = destinations.firstWhere(
+                            (d) => d.name.toLowerCase().contains(trip.destination.toLowerCase()) ||
+                                   trip.destination.toLowerCase().contains(d.name.toLowerCase()) ||
+                                   trip.name.toLowerCase().contains(d.name.toLowerCase())
+                          );
+                        } catch (_) {
+                          for (var d in destinations) {
+                            for (var day in trip.itinerary) {
+                              for (var act in day.activities) {
+                                if (act.location.toLowerCase().contains(d.name.toLowerCase()) ||
+                                    d.name.toLowerCase().contains(act.location.toLowerCase())) {
+                                  matchedDest = d;
+                                  break;
+                                }
+                              }
+                              if (matchedDest != null) break;
+                            }
+                            if (matchedDest != null) break;
+                          }
+                        }
+
+                        if (matchedDest == null) {
+                          return _CardContainer(
+                            child: Column(
+                              children: [
+                                Icon(LucideIcons.mapPin, size: 48, color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No custom destination metadata matched for "${trip.destination}". Check your trip settings to match Samal Island, Eden Nature Park, Mt. Apo, Dahican Beach, or Malagos Garden Resort!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return _CardContainer(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      matchedDest.image,
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: colorScheme.primary.withValues(alpha: 0.1),
+                                        child: Icon(LucideIcons.image, color: primaryColor),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          matchedDest.name,
+                                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(LucideIcons.mapPin, size: 14, color: primaryColor),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              matchedDest.location,
+                                              style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(LucideIcons.star, size: 14, color: Colors.amber),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '${matchedDest.rating} / 5.0 Rating',
+                                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                matchedDest.description,
+                                style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.7), height: 1.5),
+                              ),
+                              const Divider(height: 32),
+                              
+                              // Pricing Section
+                              Text(
+                                'Pricing Details & Packages',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                              ),
+                              const SizedBox(height: 12),
+                              _DetailRow(label: 'Entrance Fee', value: matchedDest.entranceFee, icon: LucideIcons.ticket),
+                              if (matchedDest.overnightFee != null)
+                                _DetailRow(label: 'Overnight Fee', value: matchedDest.overnightFee!, icon: LucideIcons.moon),
+                              _DetailRow(label: 'Operating Hours', value: matchedDest.operatingHours.replaceAll('\n', ' | '), icon: LucideIcons.clock),
+                              
+                              const SizedBox(height: 20),
+                              
+                              // Accessibility flags
+                              Text(
+                                'Accessibility & Family Features',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  if (matchedDest.accessibility.isKidFriendly)
+                                    _AccessibilityBadge(label: 'Kid-Friendly', icon: LucideIcons.smile, color: Colors.green),
+                                  if (matchedDest.accessibility.isWheelchairAccessible)
+                                    _AccessibilityBadge(label: 'Wheelchair Accessible', icon: LucideIcons.accessibility, color: Colors.blue),
+                                  if (matchedDest.accessibility.isPetFriendly)
+                                    _AccessibilityBadge(label: 'Pet-Friendly', icon: LucideIcons.dog, color: Colors.orange),
+                                  if (matchedDest.accessibility.isElderlyFriendly)
+                                    _AccessibilityBadge(label: 'Elderly-Friendly', icon: LucideIcons.heart, color: Colors.red),
+                                ],
+                              ),
+                              const Divider(height: 32),
+                              
+                              // Activities prices list
+                              if (matchedDest.activityPrices != null && matchedDest.activityPrices!.isNotEmpty) ...[
+                                Text(
+                                  'Experience & Activity Rates',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                ),
+                                const SizedBox(height: 8),
+                                ...matchedDest.activityPrices!.map((ap) => Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          ap.name,
+                                          style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${ap.price}${ap.isPerPerson ? ' / pax' : ''}',
+                                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: primaryColor),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                                const Divider(height: 32),
+                              ],
+
+                              // Accommodations
+                              if (matchedDest.accommodations != null && matchedDest.accommodations!.isNotEmpty) ...[
+                                Text(
+                                  'Lodging & Accommodations',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                ),
+                                const SizedBox(height: 12),
+                                ...matchedDest.accommodations!.map((ac) => Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.onSurface.withValues(alpha: 0.03),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.05)),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            ac.type,
+                                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                          ),
+                                          Text(
+                                            ac.price,
+                                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: primaryColor),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        ac.description,
+                                        style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                                const Divider(height: 32),
+                              ],
+
+                              // Quick Travel Info
+                              Text(
+                                'Travel Guide Info',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                              ),
+                              const SizedBox(height: 12),
+                              _DetailRow(label: 'Best Time to Visit', value: matchedDest.bestTimeToVisit, icon: LucideIcons.sun),
+                              _DetailRow(label: 'Travel Time', value: matchedDest.estimatedTravelTime, icon: LucideIcons.hourglass),
+                              _DetailRow(label: 'How to Get There', value: matchedDest.howToGetThere, icon: LucideIcons.bus),
+                              _DetailRow(label: 'Meal Plan Guide', value: matchedDest.mealPlanDetails, icon: LucideIcons.utensilsCrossed),
+                              
+                              if (matchedDest.whatToBring.isNotEmpty) ...[
+                                const Divider(height: 32),
+                                Text(
+                                  'What to Bring Checklist',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                ),
+                                const SizedBox(height: 12),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: matchedDest.whatToBring.map((item) => Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: primaryColor.withValues(alpha: 0.05),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: primaryColor.withValues(alpha: 0.15)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(LucideIcons.check, size: 14, color: primaryColor),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          item,
+                                          style: TextStyle(fontSize: 13, color: colorScheme.onSurface.withValues(alpha: 0.8)),
+                                        ),
+                                      ],
+                                    ),
+                                  )).toList(),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      }
                     ),
 
                   const SizedBox(height: 40),
@@ -835,3 +1325,85 @@ class _BudgetRow extends StatelessWidget {
     );
   }
 }
+
+class _DetailRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _DetailRow({required this.label, required this.value, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final primaryColor = colorScheme.primary;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: primaryColor),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 130,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                color: colorScheme.onSurface.withValues(alpha: 0.8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AccessibilityBadge extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _AccessibilityBadge({required this.label, required this.icon, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
