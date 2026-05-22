@@ -240,12 +240,6 @@ class ProfilePage extends ConsumerWidget {
                       subtitle: themeMode == ThemeMode.system ? 'System default' : (themeMode == ThemeMode.dark ? 'Dark' : 'Light'),
                       onTap: () => _showAppearanceModal(context, ref),
                     ),
-                    _SettingsItem(
-                      icon: LucideIcons.server,
-                      title: 'API Server Settings',
-                      subtitle: ref.watch(backendUrlProvider),
-                      onTap: () => _showApiSettingsModal(context, ref),
-                    ),
                   ],
                 ),
                 
@@ -329,7 +323,14 @@ class ProfilePage extends ConsumerWidget {
                 Center(
                   child: Column(
                     children: [
-                      Text('Lakbay+ v1.0.0', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
+                      GestureDetector(
+                        onLongPress: () => showApiSettingsModal(context, ref),
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                          child: Text('Lakbay+ v1.0.0', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
+                        ),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -395,24 +396,24 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  void _showApiSettingsModal(BuildContext context, WidgetRef ref) {
+  void showApiSettingsModal(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const _ApiSettingsModal(),
+      builder: (context) => const ApiSettingsModal(),
     );
   }
 }
 
-class _ApiSettingsModal extends ConsumerStatefulWidget {
-  const _ApiSettingsModal();
+class ApiSettingsModal extends ConsumerStatefulWidget {
+  const ApiSettingsModal({super.key});
 
   @override
-  ConsumerState<_ApiSettingsModal> createState() => _ApiSettingsModalState();
+  ConsumerState<ApiSettingsModal> createState() => ApiSettingsModalState();
 }
 
-class _ApiSettingsModalState extends ConsumerState<_ApiSettingsModal> {
+class ApiSettingsModalState extends ConsumerState<ApiSettingsModal> {
   late final TextEditingController _urlController;
 
   @override
