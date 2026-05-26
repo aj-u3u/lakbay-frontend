@@ -29,21 +29,7 @@ class DestinationPreviewModal extends ConsumerWidget {
     final token = ref.watch(authTokenProvider);
     final isGuest = token == null;
 
-    // Compute accommodation starting price
-    String? accommodationTeaser;
-    if (destination.accommodations != null &&
-        destination.accommodations!.isNotEmpty) {
-      accommodationTeaser =
-          'Starting from ${destination.accommodations!.first.price}';
-    }
 
-    // Compute activity price range
-    String? activityTeaser;
-    if (destination.activityPrices != null &&
-        destination.activityPrices!.isNotEmpty) {
-      activityTeaser =
-          '${destination.activityPrices!.length} activities available';
-    }
 
     // Travel highlights from categories and best time
     final highlights = <String>[];
@@ -238,41 +224,66 @@ class DestinationPreviewModal extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
 
-                    // Meta info row
-                    Row(
+                    // Meta info column
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(LucideIcons.mapPin,
-                            size: 16,
-                            color:
-                                colorScheme.onSurface.withValues(alpha: 0.5)),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            destination.location,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: colorScheme.onSurface
-                                  .withValues(alpha: 0.6),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(LucideIcons.mapPin,
+                                size: 16,
+                                color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                destination.location,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        Icon(LucideIcons.clock,
-                            size: 16,
-                            color:
-                                colorScheme.onSurface.withValues(alpha: 0.5)),
-                        const SizedBox(width: 6),
-                        Text(
-                          destination.estimatedTravelTime.length > 20
-                              ? destination.estimatedTravelTime
-                                  .substring(0, 20)
-                              : destination.estimatedTravelTime,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color:
-                                colorScheme.onSurface.withValues(alpha: 0.6),
-                          ),
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(LucideIcons.clock,
+                                size: 16,
+                                color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                destination.estimatedTravelTime,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(LucideIcons.calendar,
+                                size: 16,
+                                color: colorScheme.onSurface.withValues(alpha: 0.5)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Operating Hours:\n${destination.operatingHours}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -296,10 +307,12 @@ class DestinationPreviewModal extends ConsumerWidget {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        _HighlightChip(
-                          icon: LucideIcons.calendar,
-                          label: 'Best: ${destination.bestTimeToVisit.length > 30 ? destination.bestTimeToVisit.substring(0, 30) + '…' : destination.bestTimeToVisit}',
-                          color: primaryColor,
+                        Expanded(
+                          child: _HighlightChip(
+                            icon: LucideIcons.calendar,
+                            label: 'Best time to visit: ${destination.bestTimeToVisit}',
+                            color: primaryColor,
+                          ),
                         ),
                       ],
                     ),
@@ -327,43 +340,7 @@ class DestinationPreviewModal extends ConsumerWidget {
                     ),
                     const SizedBox(height: 20),
 
-                    // Accommodation & Pricing snapshot
-                    Row(
-                      children: [
-                        if (accommodationTeaser != null)
-                          Expanded(
-                            child: _SnapshotCard(
-                              icon: LucideIcons.building2,
-                              label: 'Accommodation',
-                              value: accommodationTeaser,
-                              color: const Color(0xFF0EA5E9),
-                            ),
-                          ),
-                        if (accommodationTeaser != null &&
-                            activityTeaser != null)
-                          const SizedBox(width: 10),
-                        if (activityTeaser != null)
-                          Expanded(
-                            child: _SnapshotCard(
-                              icon: LucideIcons.star,
-                              label: 'Activities',
-                              value: activityTeaser,
-                              color: const Color(0xFFF59E0B),
-                            ),
-                          ),
-                        if (accommodationTeaser == null &&
-                            activityTeaser == null)
-                          Expanded(
-                            child: _SnapshotCard(
-                              icon: LucideIcons.philippinePeso,
-                              label: 'Entrance Fee',
-                              value: destination.entranceFee,
-                              color: const Color(0xFF10B981),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
+
 
                     // Map
                     _SectionLabel(label: '📍 Location Map', primary: primaryColor),
@@ -383,60 +360,7 @@ class DestinationPreviewModal extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
 
-                    // Guest lock banner
-                    if (isGuest) ...[
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: colorScheme.onSurface.withValues(alpha: 0.04),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                              color:
-                                  colorScheme.outline.withValues(alpha: 0.12)),
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color:
-                                    primaryColor.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(LucideIcons.lock,
-                                  size: 18, color: primaryColor),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Sign in for the full experience',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    'Accommodations, budget tools & AI planning',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: colorScheme.onSurface
-                                          .withValues(alpha: 0.5),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+
 
                     // View Full Details button
                     SizedBox(
@@ -544,7 +468,6 @@ class _HighlightChip extends StatelessWidget {
                   fontSize: 12,
                   color: color,
                   fontWeight: FontWeight.w500),
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -553,60 +476,4 @@ class _HighlightChip extends StatelessWidget {
   }
 }
 
-class _SnapshotCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
 
-  const _SnapshotCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                  letterSpacing: 0.4,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-}

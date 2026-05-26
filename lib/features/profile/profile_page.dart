@@ -30,10 +30,21 @@ class SelectedRegionNotifier extends Notifier<String> {
   void update(String value) => state = value;
 }
 
-final pushNotificationsProvider = NotifierProvider<PushNotificationsNotifier, bool>(PushNotificationsNotifier.new);
-final emailNotificationsProvider = NotifierProvider<EmailNotificationsNotifier, bool>(EmailNotificationsNotifier.new);
-final smsNotificationsProvider = NotifierProvider<SmsNotificationsNotifier, bool>(SmsNotificationsNotifier.new);
-final selectedRegionProvider = NotifierProvider<SelectedRegionNotifier, String>(SelectedRegionNotifier.new);
+final pushNotificationsProvider =
+    NotifierProvider<PushNotificationsNotifier, bool>(
+      PushNotificationsNotifier.new,
+    );
+final emailNotificationsProvider =
+    NotifierProvider<EmailNotificationsNotifier, bool>(
+      EmailNotificationsNotifier.new,
+    );
+final smsNotificationsProvider =
+    NotifierProvider<SmsNotificationsNotifier, bool>(
+      SmsNotificationsNotifier.new,
+    );
+final selectedRegionProvider = NotifierProvider<SelectedRegionNotifier, String>(
+  SelectedRegionNotifier.new,
+);
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -45,6 +56,211 @@ class ProfilePage extends ConsumerWidget {
     final primaryColor = colorScheme.primary;
     final secondaryColor = colorScheme.secondary;
     final themeMode = ref.watch(themeModeProvider);
+    final token = ref.watch(authTokenProvider);
+    final isGuest = token == null;
+
+    if (isGuest) {
+      return Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 8),
+                Text(
+                  'Profile',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Sign in to access your account',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: colorScheme.onSurface.withValues(alpha: 0.55),
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Avatar placeholder
+                Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              primaryColor.withValues(alpha: 0.3),
+                              secondaryColor.withValues(alpha: 0.3),
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          LucideIcons.userRound,
+                          size: 44,
+                          color: primaryColor.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            LucideIcons.lock,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Center(
+                  child: Text(
+                    'Traveling as Guest',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Benefits card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        primaryColor.withValues(alpha: 0.08),
+                        secondaryColor.withValues(alpha: 0.06),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: primaryColor.withValues(alpha: 0.15),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.sparkles,
+                            size: 18,
+                            color: primaryColor,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Create your Lakbay+ account',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      _GuestProfileBenefit(
+                        icon: LucideIcons.userRound,
+                        color: primaryColor,
+                        text: 'Personalized travel profile',
+                      ),
+                      _GuestProfileBenefit(
+                        icon: LucideIcons.brain,
+                        color: const Color(0xFF8B5CF6),
+                        text: 'AI-powered trip planning',
+                      ),
+                      _GuestProfileBenefit(
+                        icon: LucideIcons.bookmark,
+                        color: const Color(0xFF0EA5E9),
+                        text: 'Save favorite destinations',
+                      ),
+                      _GuestProfileBenefit(
+                        icon: LucideIcons.bell,
+                        color: const Color(0xFFF59E0B),
+                        text: 'Travel deals & notifications',
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Sign in button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: () => context.push('/login'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 4,
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(LucideIcons.logIn, size: 20),
+                        SizedBox(width: 10),
+                        Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: OutlinedButton(
+                    onPressed: () => context.push('/signup'),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: primaryColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      'Create Account',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     final userProfile = ref.watch(userProfileProvider);
 
     return Scaffold(
@@ -72,7 +288,11 @@ class ProfilePage extends ConsumerWidget {
                     children: [
                       Text(
                         'Profile',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       Container(
@@ -81,7 +301,10 @@ class ProfilePage extends ConsumerWidget {
                           color: colorScheme.surface,
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
-                            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                            ),
                           ],
                         ),
                         child: Column(
@@ -100,24 +323,45 @@ class ProfilePage extends ConsumerWidget {
                                   child: Center(
                                     child: Text(
                                       userProfile.name.isNotEmpty
-                                          ? userProfile.name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase()
+                                          ? userProfile.name
+                                                .split(' ')
+                                                .map(
+                                                  (e) =>
+                                                      e.isNotEmpty ? e[0] : '',
+                                                )
+                                                .take(2)
+                                                .join()
+                                                .toUpperCase()
                                           : 'U',
-                                      style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         userProfile.name,
-                                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.onSurface,
+                                        ),
                                       ),
                                       Text(
                                         userProfile.email,
-                                        style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
+                                        style: TextStyle(
+                                          color: colorScheme.onSurface
+                                              .withValues(alpha: 0.6),
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -130,10 +374,21 @@ class ProfilePage extends ConsumerWidget {
                               child: OutlinedButton(
                                 onPressed: () => context.push('/profile/edit'),
                                 style: OutlinedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  side: BorderSide(color: colorScheme.outline.withValues(alpha: 0.2)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  side: BorderSide(
+                                    color: colorScheme.outline.withValues(
+                                      alpha: 0.2,
+                                    ),
+                                  ),
                                 ),
-                                child: Text('Edit Profile', style: TextStyle(color: colorScheme.onSurface)),
+                                child: Text(
+                                  'Edit Profile',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -145,27 +400,37 @@ class ProfilePage extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 Text(
                   'Your Travel Stats',
-                  style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [primaryColor, primaryColor.withValues(alpha: 0.8)],
+                      colors: [
+                        primaryColor,
+                        primaryColor.withValues(alpha: 0.8),
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
-                      BoxShadow(color: primaryColor.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8)),
+                      BoxShadow(
+                        color: primaryColor.withValues(alpha: 0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
                     ],
                   ),
                   child: Column(
@@ -178,11 +443,18 @@ class ProfilePage extends ConsumerWidget {
                             children: [
                               Text(
                                 'Total Adventures',
-                                style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 12,
+                                ),
                               ),
                               const Text(
                                 '12',
-                                style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -193,7 +465,13 @@ class ProfilePage extends ConsumerWidget {
                               color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: Center(child: Icon(LucideIcons.map, size: 32, color: Colors.white)),
+                            child: Center(
+                              child: Icon(
+                                LucideIcons.map,
+                                size: 32,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -201,7 +479,11 @@ class ProfilePage extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.only(top: 20),
                         decoration: BoxDecoration(
-                          border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.2))),
+                          border: Border(
+                            top: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.2),
+                            ),
+                          ),
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -216,10 +498,13 @@ class ProfilePage extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-                
-                const _SectionHeader(icon: LucideIcons.settings, title: 'Settings'),
+
+                const _SectionHeader(
+                  icon: LucideIcons.settings,
+                  title: 'Settings',
+                ),
                 const SizedBox(height: 12),
-                
+
                 _SettingsGroup(
                   items: [
                     _SettingsItem(
@@ -237,14 +522,21 @@ class ProfilePage extends ConsumerWidget {
                     _SettingsItem(
                       icon: LucideIcons.palette,
                       title: 'Appearance',
-                      subtitle: themeMode == ThemeMode.system ? 'System default' : (themeMode == ThemeMode.dark ? 'Dark' : 'Light'),
+                      subtitle: themeMode == ThemeMode.system
+                          ? 'System default'
+                          : (themeMode == ThemeMode.dark ? 'Dark' : 'Light'),
                       onTap: () => _showAppearanceModal(context, ref),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                Text('Account & Privacy', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+                Text(
+                  'Account & Privacy',
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
                 const SizedBox(height: 12),
                 _SettingsGroup(
                   items: [
@@ -256,9 +548,14 @@ class ProfilePage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                Text('Support', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+                Text(
+                  'Support',
+                  style: TextStyle(
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
                 const SizedBox(height: 12),
                 _SettingsGroup(
                   items: [
@@ -270,9 +567,9 @@ class ProfilePage extends ConsumerWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 SizedBox(
                   width: double.infinity,
                   height: 60,
@@ -282,7 +579,9 @@ class ProfilePage extends ConsumerWidget {
                         context: context,
                         builder: (context) => AlertDialog(
                           title: const Text('Logout'),
-                          content: const Text('Are you sure you want to logout?'),
+                          content: const Text(
+                            'Are you sure you want to logout?',
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
@@ -306,19 +605,24 @@ class ProfilePage extends ConsumerWidget {
                       backgroundColor: colorScheme.error.withValues(alpha: 0.1),
                       foregroundColor: colorScheme.error,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(LucideIcons.logOut, size: 20),
                         SizedBox(width: 8),
-                        Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(
+                          'Logout',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
                 Center(
                   child: Column(
@@ -327,16 +631,47 @@ class ProfilePage extends ConsumerWidget {
                         onLongPress: () => showApiSettingsModal(context, ref),
                         behavior: HitTestBehavior.opaque,
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
-                          child: Text('Lakbay+ v1.0.0', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 4.0,
+                            horizontal: 16.0,
+                          ),
+                          child: Text(
+                            'Lakbay+ v1.0.0',
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.3,
+                              ),
+                              fontSize: 12,
+                            ),
+                          ),
                         ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Made with ', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
-                          Icon(LucideIcons.heart, size: 12, color: colorScheme.onSurface.withValues(alpha: 0.3)),
-                          Text(' for Davao Region', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
+                          Text(
+                            'Made with ',
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.3,
+                              ),
+                              fontSize: 12,
+                            ),
+                          ),
+                          Icon(
+                            LucideIcons.heart,
+                            size: 12,
+                            color: colorScheme.onSurface.withValues(alpha: 0.3),
+                          ),
+                          Text(
+                            ' for Davao Region',
+                            style: TextStyle(
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.3,
+                              ),
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -457,7 +792,9 @@ class ApiSettingsModalState extends ConsumerState<ApiSettingsModal> {
             const SizedBox(height: 12),
             Text(
               'Configure the base URL for the FastAPI backend. Use http://10.0.2.2:8000 for Android emulator, or http://localhost:8000 for iOS/web/desktop.',
-              style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+              style: TextStyle(
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
             const SizedBox(height: 24),
             TextFormField(
@@ -500,7 +837,10 @@ class ApiSettingsModalState extends ConsumerState<ApiSettingsModal> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Save Settings', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Save Settings',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -522,8 +862,21 @@ class _StatItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 12,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -540,9 +893,19 @@ class _SectionHeader extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
-        Icon(icon, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.6)),
+        Icon(
+          icon,
+          size: 16,
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
         const SizedBox(width: 8),
-        Text(title, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontWeight: FontWeight.w500)),
+        Text(
+          title,
+          style: TextStyle(
+            color: colorScheme.onSurface.withValues(alpha: 0.6),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
       ],
     );
   }
@@ -561,7 +924,10 @@ class _SettingsGroup extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: Column(
@@ -572,7 +938,10 @@ class _SettingsGroup extends StatelessWidget {
             children: [
               item,
               if (idx < items.length - 1)
-                Divider(height: 1, color: colorScheme.outline.withValues(alpha: 0.1)),
+                Divider(
+                  height: 1,
+                  color: colorScheme.outline.withValues(alpha: 0.1),
+                ),
             ],
           );
         }).toList(),
@@ -619,12 +988,28 @@ class _SettingsItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
-                  Text(subtitle, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
-            Icon(LucideIcons.chevronRight, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+            Icon(
+              LucideIcons.chevronRight,
+              size: 20,
+              color: colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
           ],
         ),
       ),
@@ -651,8 +1036,12 @@ class _AppearanceModal extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Choose Appearance', 
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)
+            'Choose Appearance',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 24),
           _ThemeOption(
@@ -726,8 +1115,13 @@ class _ThemeOption extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? primaryColor : Colors.transparent, width: 2),
-          color: isSelected ? primaryColor.withValues(alpha: 0.1) : colorScheme.onSurface.withValues(alpha: 0.05),
+          border: Border.all(
+            color: isSelected ? primaryColor : Colors.transparent,
+            width: 2,
+          ),
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.1)
+              : colorScheme.onSurface.withValues(alpha: 0.05),
         ),
         child: Row(
           children: [
@@ -744,8 +1138,20 @@ class _ThemeOption extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
-                  Text(subtitle, style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -755,6 +1161,7 @@ class _ThemeOption extends StatelessWidget {
     );
   }
 }
+
 class _NotificationsModal extends ConsumerWidget {
   const _NotificationsModal();
 
@@ -771,27 +1178,37 @@ class _NotificationsModal extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Notification Settings', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          Text(
+            'Notification Settings',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 24),
           SwitchListTile(
             title: const Text('Push Notifications'),
             subtitle: const Text('Get instant alerts on your device'),
             value: ref.watch(pushNotificationsProvider),
-            onChanged: (val) => ref.read(pushNotificationsProvider.notifier).update(val),
+            onChanged: (val) =>
+                ref.read(pushNotificationsProvider.notifier).update(val),
             activeColor: colorScheme.primary,
           ),
           SwitchListTile(
             title: const Text('Email Notifications'),
             subtitle: const Text('Receive travel summaries via email'),
             value: ref.watch(emailNotificationsProvider),
-            onChanged: (val) => ref.read(emailNotificationsProvider.notifier).update(val),
+            onChanged: (val) =>
+                ref.read(emailNotificationsProvider.notifier).update(val),
             activeColor: colorScheme.primary,
           ),
           SwitchListTile(
             title: const Text('SMS Notifications'),
             subtitle: const Text('Important updates via text message'),
             value: ref.watch(smsNotificationsProvider),
-            onChanged: (val) => ref.read(smsNotificationsProvider.notifier).update(val),
+            onChanged: (val) =>
+                ref.read(smsNotificationsProvider.notifier).update(val),
             activeColor: colorScheme.primary,
           ),
           const SizedBox(height: 24),
@@ -826,23 +1243,37 @@ class _RegionModal extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Default Region', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          Text(
+            'Default Region',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 12),
-          Text('Select your primary region for recommendations', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6))),
+          Text(
+            'Select your primary region for recommendations',
+            style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
           const SizedBox(height: 24),
-          ...regions.map((region) => RadioListTile<String>(
-            title: Text(region),
-            value: region,
-            groupValue: currentRegion,
-            onChanged: (val) {
-              if (val != null) {
-                ref.read(selectedRegionProvider.notifier).update(val);
-                Navigator.pop(context);
-              }
-            },
-            activeColor: colorScheme.primary,
-            contentPadding: EdgeInsets.zero,
-          )),
+          ...regions.map(
+            (region) => RadioListTile<String>(
+              title: Text(region),
+              value: region,
+              groupValue: currentRegion,
+              onChanged: (val) {
+                if (val != null) {
+                  ref.read(selectedRegionProvider.notifier).update(val);
+                  Navigator.pop(context);
+                }
+              },
+              activeColor: colorScheme.primary,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
           const SizedBox(height: 12),
         ],
       ),
@@ -866,7 +1297,14 @@ class _PrivacyModal extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Privacy & Security', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          Text(
+            'Privacy & Security',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 24),
           _ActionTile(
             icon: LucideIcons.key,
@@ -881,7 +1319,13 @@ class _PrivacyModal extends StatelessWidget {
             title: 'Two-Factor Authentication',
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('2FA setup will be available in the next update.')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    '2FA setup will be available in the next update.',
+                  ),
+                ),
+              );
             },
           ),
           _ActionTile(
@@ -889,7 +1333,11 @@ class _PrivacyModal extends StatelessWidget {
             title: 'Manage My Data',
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Requesting data export... Check your email.')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Requesting data export... Check your email.'),
+                ),
+              );
             },
           ),
           const SizedBox(height: 24),
@@ -915,17 +1363,26 @@ class _HelpModal extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Help Center', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: colorScheme.onSurface)),
+          Text(
+            'Help Center',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
           const SizedBox(height: 24),
           _ActionTile(
             icon: LucideIcons.messageSquare,
             title: 'Live Chat Support',
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Connecting to Lakbay+ Support...'),
-                duration: Duration(seconds: 2),
-              ));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Connecting to Lakbay+ Support...'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
             },
           ),
           _ActionTile(
@@ -941,7 +1398,9 @@ class _HelpModal extends StatelessWidget {
             title: 'Email Support',
             onTap: () {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Opening email composer...')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Opening email composer...')),
+              );
             },
           ),
           const SizedBox(height: 24),
@@ -956,7 +1415,11 @@ class _ActionTile extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
-  const _ActionTile({required this.icon, required this.title, required this.onTap});
+  const _ActionTile({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -979,17 +1442,33 @@ void _showChangePasswordDialog(BuildContext context) {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextField(decoration: const InputDecoration(labelText: 'Old Password'), obscureText: true),
-          TextField(decoration: const InputDecoration(labelText: 'New Password'), obscureText: true),
-          TextField(decoration: const InputDecoration(labelText: 'Confirm New Password'), obscureText: true),
+          TextField(
+            decoration: const InputDecoration(labelText: 'Old Password'),
+            obscureText: true,
+          ),
+          TextField(
+            decoration: const InputDecoration(labelText: 'New Password'),
+            obscureText: true,
+          ),
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Confirm New Password',
+            ),
+            obscureText: true,
+          ),
         ],
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
         ElevatedButton(
           onPressed: () {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Password updated successfully!')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Password updated successfully!')),
+            );
           },
           child: const Text('Update'),
         ),
@@ -1008,14 +1487,26 @@ void _showFAQsDialog(BuildContext context) {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            _faqItem('How do I plan a trip?', 'Go to the AI Planner tab and follow the steps.'),
-            _faqItem('Can I use the app offline?', 'Most features require an internet connection.'),
-            _faqItem('How to delete my account?', 'Contact support@lakbayplus.com.'),
+            _faqItem(
+              'How do I plan a trip?',
+              'Go to the AI Planner tab and follow the steps.',
+            ),
+            _faqItem(
+              'Can I use the app offline?',
+              'Most features require an internet connection.',
+            ),
+            _faqItem(
+              'How to delete my account?',
+              'Contact support@lakbayplus.com.',
+            ),
           ],
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
       ],
     ),
   );
@@ -1033,4 +1524,47 @@ Widget _faqItem(String question, String answer) {
       ],
     ),
   );
+}
+
+class _GuestProfileBenefit extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String text;
+
+  const _GuestProfileBenefit({
+    required this.icon,
+    required this.color,
+    required this.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

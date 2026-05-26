@@ -185,65 +185,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                             color: colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        if (GoRouterState.of(context).uri.queryParameters.containsKey('redirect')) ...[
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  colorScheme.primary.withValues(alpha: 0.1),
-                                  colorScheme.secondary.withValues(alpha: 0.1),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: colorScheme.primary.withValues(alpha: 0.2),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(
-                                      LucideIcons.sparkles,
-                                      color: colorScheme.primary,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Unlock Premium Features',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'Create your account to unlock:',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: colorScheme.onSurface.withValues(alpha: 0.8),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                _buildUnlockItem(context, '🔓', 'Complete destination details & guides'),
-                                _buildUnlockItem(context, '🤖', 'AI-powered personalized travel planner'),
-                                _buildUnlockItem(context, '💼', 'Full budget breakdowns & expense tracking'),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ] else ...[
-                          const SizedBox(height: 32),
-                        ],
+                        const SizedBox(height: 32),
                         Text(
                           'Full Name',
                           style: TextStyle(
@@ -466,26 +408,5 @@ class _SignupPageState extends ConsumerState<SignupPage> {
     );
   }
 
-  Widget _buildUnlockItem(BuildContext context, String emoji, String text) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 14)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                fontSize: 13,
-                color: colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 }

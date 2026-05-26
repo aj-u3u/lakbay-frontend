@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import '../../app/api_service.dart';
 import '../../shared/data/trips_data.dart';
 import '../../shared/models/trip.dart';
+import '../../shared/widgets/guest_explore_carousel.dart';
 
 final tripSearchQueryProvider = StateProvider.autoDispose<String>((ref) => '');
 
@@ -18,10 +20,19 @@ class TripPage extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final primaryColor = colorScheme.primary;
     final searchQuery = ref.watch(tripSearchQueryProvider);
+    final token = ref.watch(authTokenProvider);
+    final isGuest = token == null;
+
+    if (isGuest) {
+      return const GuestExploreCarousel(
+        title: "Explore the Davao Region's\n5 provinces with us",
+        redirectPath: '/trip',
+      );
+    }
 
     final filteredTrips = mockTrips.where((trip) {
       return trip.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-             trip.destination.toLowerCase().contains(searchQuery.toLowerCase());
+          trip.destination.toLowerCase().contains(searchQuery.toLowerCase());
     }).toList();
 
     return Scaffold(
@@ -49,7 +60,11 @@ class TripPage extends ConsumerWidget {
                     children: [
                       Text(
                         'My Trips',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       Row(
@@ -60,18 +75,39 @@ class TripPage extends ConsumerWidget {
                                 color: colorScheme.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 10,
+                                  ),
                                 ],
                               ),
                               child: TextField(
-                                onChanged: (val) => ref.read(tripSearchQueryProvider.notifier).state = val,
+                                onChanged: (val) =>
+                                    ref
+                                            .read(
+                                              tripSearchQueryProvider.notifier,
+                                            )
+                                            .state =
+                                        val,
                                 style: TextStyle(color: colorScheme.onSurface),
                                 decoration: InputDecoration(
                                   hintText: 'Search trips...',
-                                  hintStyle: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.4)),
-                                  prefixIcon: Icon(LucideIcons.search, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                                  hintStyle: TextStyle(
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                  ),
+                                  prefixIcon: Icon(
+                                    LucideIcons.search,
+                                    color: colorScheme.onSurface.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                  ),
                                   border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ),
                                 ),
                               ),
                             ),
@@ -82,12 +118,18 @@ class TripPage extends ConsumerWidget {
                               color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
-                                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                ),
                               ],
                             ),
                             child: IconButton(
                               padding: const EdgeInsets.all(16),
-                              icon: Icon(LucideIcons.listFilter, color: colorScheme.onSurface),
+                              icon: Icon(
+                                LucideIcons.listFilter,
+                                color: colorScheme.onSurface,
+                              ),
                               onPressed: () => context.push('/filter'),
                             ),
                           ),
@@ -114,7 +156,10 @@ class TripPage extends ConsumerWidget {
                               SizedBox(width: 8),
                               Text(
                                 'Create Trip',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -126,7 +171,7 @@ class TripPage extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           if (filteredTrips.isEmpty)
             SliverFillRemaining(
               child: Center(
@@ -140,17 +185,27 @@ class TripPage extends ConsumerWidget {
                         color: colorScheme.onSurface.withValues(alpha: 0.05),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(LucideIcons.mapPin, size: 40, color: colorScheme.onSurface.withValues(alpha: 0.2)),
+                      child: Icon(
+                        LucideIcons.mapPin,
+                        size: 40,
+                        color: colorScheme.onSurface.withValues(alpha: 0.2),
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'No trips yet',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Start planning your first adventure',
-                      style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6)),
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                      ),
                     ),
                   ],
                 ),
@@ -160,16 +215,13 @@ class TripPage extends ConsumerWidget {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final trip = filteredTrips[index];
-                    return _TripCard(trip: trip);
-                  },
-                  childCount: filteredTrips.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final trip = filteredTrips[index];
+                  return _TripCard(trip: trip);
+                }, childCount: filteredTrips.length),
               ),
             ),
-          
+
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
@@ -209,7 +261,9 @@ class _TripCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
               child: Image.network(
                 trip.image,
                 height: 160,
@@ -224,23 +278,38 @@ class _TripCard extends StatelessWidget {
                 children: [
                   Text(
                     trip.name,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(LucideIcons.calendar, size: 16, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                      Icon(
+                        LucideIcons.calendar,
+                        size: 16,
+                        color: colorScheme.onSurface.withValues(alpha: 0.4),
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '${dateFormatter.format(trip.startDate)} - ${dateFormatter.format(trip.endDate)}, ${yearFormatter.format(trip.endDate)}',
-                        style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colorScheme.onSurface.withValues(alpha: 0.4),
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
                     trip.summary,
-                    style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.7), height: 1.4),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                      height: 1.4,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -252,7 +321,12 @@ class _TripCard extends StatelessWidget {
                         children: [
                           Text(
                             'Budget: ',
-                            style: TextStyle(fontSize: 14, color: colorScheme.onSurface.withValues(alpha: 0.4)),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.4,
+                              ),
+                            ),
                           ),
                           Text(
                             '₱${NumberFormat('#,###').format(trip.budget.total)}',
@@ -264,7 +338,11 @@ class _TripCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      Icon(LucideIcons.chevronRight, size: 20, color: colorScheme.onSurface.withValues(alpha: 0.3)),
+                      Icon(
+                        LucideIcons.chevronRight,
+                        size: 20,
+                        color: colorScheme.onSurface.withValues(alpha: 0.3),
+                      ),
                     ],
                   ),
                 ],
@@ -276,3 +354,5 @@ class _TripCard extends StatelessWidget {
     );
   }
 }
+
+

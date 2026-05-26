@@ -11,6 +11,7 @@ import '../features/profile/profile_page.dart';
 import '../features/auth/landing_page.dart';
 import '../features/auth/login_page.dart';
 import '../features/auth/signup_page.dart';
+import '../shared/widgets/guest_explore_carousel.dart';
 import '../features/home/destination_details_page.dart';
 import '../features/trip/trip_details_page.dart';
 import '../features/group/group_details_page.dart';
@@ -30,10 +31,44 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final goRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/landing',
+  redirect: (context, state) {
+    final token = ProviderScope.containerOf(context).read(authTokenProvider);
+    final isGuest = token == null;
+    final path = state.uri.path;
+
+    // Handle root path /
+    if (path == '/') {
+      return isGuest ? '/landing' : '/home';
+    }
+
+    // Public paths
+    final isPublic = path == '/landing' || path == '/explore' || path == '/login' || path == '/signup';
+
+    if (isGuest && !isPublic) {
+      if (path.startsWith('/destination/') || path.startsWith('/trip/') || path.startsWith('/group/')) {
+        return '/login?redirect=$path';
+      }
+      return '/explore';
+    }
+
+    // If logged in and trying to go to landing or explore, redirect to home
+    if (!isGuest && (path == '/landing' || path == '/explore')) {
+      return '/home';
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/landing',
       builder: (context, state) => const LandingPage(),
+    ),
+    GoRoute(
+      path: '/explore',
+      builder: (context, state) => const GuestExploreCarousel(
+        title: "Explore the Davao Region's\n5 provinces with us",
+        redirectPath: '/home',
+      ),
     ),
     GoRoute(
       path: '/login',
