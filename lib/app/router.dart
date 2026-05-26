@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import 'api_service.dart';
 import '../features/home/home_page.dart';
 import '../features/trip/trip_page.dart';
 import '../features/group/group_page.dart';
@@ -35,14 +37,32 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/login',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token != null) return '/home';
+        return null;
+      },
       builder: (context, state) => const LoginPage(),
     ),
     GoRoute(
       path: '/signup',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token != null) return '/home';
+        return null;
+      },
       builder: (context, state) => const SignupPage(),
     ),
     GoRoute(
       path: '/destination/:id',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token == null) {
+          final id = state.pathParameters['id']!;
+          return '/login?redirect=/destination/$id';
+        }
+        return null;
+      },
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return DestinationDetailsPage(id: id);
@@ -50,6 +70,14 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/trip/:id',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token == null) {
+          final id = state.pathParameters['id']!;
+          return '/login?redirect=/trip/$id';
+        }
+        return null;
+      },
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return TripDetailsPage(id: id);
@@ -57,6 +85,14 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/group/:id',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token == null) {
+          final id = state.pathParameters['id']!;
+          return '/login?redirect=/group/$id';
+        }
+        return null;
+      },
       builder: (context, state) {
         final id = state.pathParameters['id']!;
         return GroupDetailsPage(id: id);
@@ -64,6 +100,13 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/ai-planner',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token == null) {
+          return '/login?redirect=/ai-planner';
+        }
+        return null;
+      },
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return AIPlannerPage(
@@ -86,6 +129,11 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/customize-itinerary',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token == null) return '/login';
+        return null;
+      },
       builder: (context, state) {
         final plan = state.extra as PlannerItineraryPlan;
         return ItineraryCustomizePage(initialPlan: plan);
@@ -93,6 +141,11 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/ai-plan-details',
+      redirect: (context, state) {
+        final token = ProviderScope.containerOf(context).read(authTokenProvider);
+        if (token == null) return '/login';
+        return null;
+      },
       builder: (context, state) {
         final plan = state.extra as PlannerItineraryPlan;
         return PlanDetailsPage(plan: plan);
