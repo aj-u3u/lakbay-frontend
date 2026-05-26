@@ -50,8 +50,6 @@ class HomePage extends ConsumerWidget {
 
     final locationAsync = ref.watch(currentLocationProvider);
     final searchQuery = ref.watch(searchQueryProvider);
-    final token = ref.watch(authTokenProvider);
-    final isGuest = token == null;
     final userProfile = ref.watch(userProfileProvider);
 
     final filteredDestinations = destinations.where((d) => 
@@ -116,7 +114,7 @@ class HomePage extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                isGuest ? 'Explorer! 👋' : '${userProfile.name.split(' ').first}! 👋',
+                                '${userProfile.name.split(' ').first}! 👋',
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
@@ -268,55 +266,7 @@ class HomePage extends ConsumerWidget {
             ),
           ),
 
-          // Guest banner
-          if (isGuest)
-            SliverToBoxAdapter(
-              child: GestureDetector(
-                onTap: () => context.push('/login'),
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(24, 0, 24, 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        primaryColor.withValues(alpha: 0.12),
-                        colorScheme.secondary.withValues(alpha: 0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                        color: primaryColor.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(LucideIcons.sparkles, size: 16, color: primaryColor),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Browsing as Guest — Sign in to save trips & unlock AI planning',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: primaryColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Sign In',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: primaryColor,
-                        ),
-                      ),
-                      Icon(LucideIcons.chevronRight,
-                          size: 14, color: primaryColor),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+
           if (searchQuery.isEmpty) ...[
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
