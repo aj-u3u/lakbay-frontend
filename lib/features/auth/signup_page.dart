@@ -69,7 +69,7 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
     try {
       final apiService = ref.read(apiServiceProvider);
-      await apiService.register(email, password);
+      await apiService.register(email, password, name: name);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../app/api_service.dart';
+import '../../shared/providers/user_provider.dart';
 
 final showPasswordProvider = StateProvider.autoDispose<bool>((ref) => false);
 
@@ -43,7 +44,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     try {
       final apiService = ref.read(apiServiceProvider);
-      await apiService.login(email, password);
+      final response = await apiService.login(email, password);
+      
+      final returnedName = response['name'] as String? ?? 'Juan Dela Cruz';
+      final returnedEmail = response['email'] as String? ?? email;
+      
+      ref.read(userProfileProvider.notifier).updateProfile(
+        name: returnedName,
+        email: returnedEmail,
+      );
+
       if (mounted) {
         final redirect = GoRouterState.of(context).uri.queryParameters['redirect'];
         if (redirect != null && redirect.isNotEmpty) {

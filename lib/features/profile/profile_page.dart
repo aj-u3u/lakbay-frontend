@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../main.dart'; // For themeModeProvider
 import '../../app/api_service.dart';
+import '../../shared/providers/user_provider.dart';
 
 class PushNotificationsNotifier extends Notifier<bool> {
   @override
@@ -246,6 +247,8 @@ class ProfilePage extends ConsumerWidget {
       );
     }
 
+    final userProfile = ref.watch(userProfileProvider);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: CustomScrollView(
@@ -296,10 +299,12 @@ class ProfilePage extends ConsumerWidget {
                                     ),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Center(
+                                  child: Center(
                                     child: Text(
-                                      'JD',
-                                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                      userProfile.name.isNotEmpty
+                                          ? userProfile.name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase()
+                                          : 'U',
+                                      style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                                     ),
                                   ),
                                 ),
@@ -309,11 +314,11 @@ class ProfilePage extends ConsumerWidget {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Juan Dela Cruz',
+                                        userProfile.name,
                                         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                                       ),
                                       Text(
-                                        'juan.delacruz@email.com',
+                                        userProfile.email,
                                         style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 14),
                                       ),
                                     ],
@@ -437,12 +442,6 @@ class ProfilePage extends ConsumerWidget {
                       subtitle: themeMode == ThemeMode.system ? 'System default' : (themeMode == ThemeMode.dark ? 'Dark' : 'Light'),
                       onTap: () => _showAppearanceModal(context, ref),
                     ),
-                    _SettingsItem(
-                      icon: LucideIcons.server,
-                      title: 'API Server Settings',
-                      subtitle: ref.watch(backendUrlProvider),
-                      onTap: () => _showApiSettingsModal(context, ref),
-                    ),
                   ],
                 ),
                 
@@ -526,7 +525,14 @@ class ProfilePage extends ConsumerWidget {
                 Center(
                   child: Column(
                     children: [
-                      Text('Lakbay+ v1.0.0', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
+                      GestureDetector(
+                        onLongPress: () => showApiSettingsModal(context, ref),
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 16.0),
+                          child: Text('Lakbay+ v1.0.0', style: TextStyle(color: colorScheme.onSurface.withValues(alpha: 0.3), fontSize: 12)),
+                        ),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -592,24 +598,24 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  void _showApiSettingsModal(BuildContext context, WidgetRef ref) {
+  void showApiSettingsModal(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => const _ApiSettingsModal(),
+      builder: (context) => const ApiSettingsModal(),
     );
   }
 }
 
-class _ApiSettingsModal extends ConsumerStatefulWidget {
-  const _ApiSettingsModal();
+class ApiSettingsModal extends ConsumerStatefulWidget {
+  const ApiSettingsModal({super.key});
 
   @override
-  ConsumerState<_ApiSettingsModal> createState() => _ApiSettingsModalState();
+  ConsumerState<ApiSettingsModal> createState() => ApiSettingsModalState();
 }
 
-class _ApiSettingsModalState extends ConsumerState<_ApiSettingsModal> {
+class ApiSettingsModalState extends ConsumerState<ApiSettingsModal> {
   late final TextEditingController _urlController;
 
   @override

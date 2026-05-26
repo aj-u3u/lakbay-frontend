@@ -20,11 +20,7 @@ class BackendUrlNotifier extends StateNotifier<String> {
   }
 
   static String get defaultUrl {
-    if (kIsWeb) return 'http://localhost:8000';
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://10.0.2.2:8000';
-    }
-    return 'http://localhost:8000';
+    return 'https://lakbay-backend-q1i0.onrender.com';
   }
 
   static const String _key = 'backend_url';
@@ -133,11 +129,12 @@ class ApiService {
   }
 
   // Authentication: Register
-  Future<Map<String, dynamic>> register(String email, String password) async {
+  Future<Map<String, dynamic>> register(String email, String password, {String? name}) async {
     try {
       final response = await _dio.post('/auth/register', data: {
         'email': email,
         'password': password,
+        if (name != null) 'name': name,
       });
 
       if (response.statusCode == 200 || response.statusCode == 201) {
@@ -148,6 +145,38 @@ class ApiService {
     } on DioException catch (e) {
       final detail = e.response?.data?['detail'];
       throw Exception(detail ?? e.message ?? 'Server error during registration');
+    }
+  }
+
+  // Authentication: Fetch Current User Profile
+  Future<Map<String, dynamic>> getMe() async {
+    try {
+      final response = await _dio.get('/auth/me');
+      if (response.statusCode == 200) {
+        return response.data as Map<String, dynamic>;
+      } else {
+        throw Exception(response.data['detail'] ?? 'Failed to fetch user info');
+      }
+    } on DioException catch (e) {
+      final detail = e.response?.data?['detail'];
+      throw Exception(detail ?? e.message ?? 'Server error during profile retrieval');
+    }
+  }
+
+  // Authentication: Update User Profile
+  Future<Map<String, dynamic>> updateMe(String name) async {
+    try {
+      final response = await _dio.put('/auth/me', data: {
+        'name': name,
+      });
+      if (response.statusCode == 200) {
+        return response.data as Map<String, dynamic>;
+      } else {
+        throw Exception(response.data['detail'] ?? 'Failed to update profile');
+      }
+    } on DioException catch (e) {
+      final detail = e.response?.data?['detail'];
+      throw Exception(detail ?? e.message ?? 'Server error during profile update');
     }
   }
 

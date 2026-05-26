@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import '../../shared/providers/user_provider.dart';
+import '../../app/api_service.dart';
 
 class EditProfilePage extends ConsumerStatefulWidget {
   const EditProfilePage({super.key});
@@ -11,9 +13,26 @@ class EditProfilePage extends ConsumerStatefulWidget {
 }
 
 class _EditProfilePageState extends ConsumerState<EditProfilePage> {
-  final _nameController = TextEditingController(text: 'Juan Dela Cruz');
-  final _emailController = TextEditingController(text: 'juan.delacruz@email.com');
-  final _phoneController = TextEditingController(text: '+63 912 345 6789');
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = ref.read(userProfileProvider);
+    _nameController = TextEditingController(text: profile.name);
+    _emailController = TextEditingController(text: profile.email);
+    _phoneController = TextEditingController(text: profile.phone);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +51,28 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
         ),
         actions: [
           TextButton(
-            onPressed: () {
-              // Save logic
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile updated successfully!')),
+            onPressed: () async {
+              final newName = _nameController.text.trim();
+              
+              ref.read(userProfileProvider.notifier).updateProfile(
+                name: newName,
+                email: _emailController.text.trim(),
+                phone: _phoneController.text.trim(),
               );
-              context.pop();
+
+              try {
+                final apiService = ref.read(apiServiceProvider);
+                await apiService.updateMe(newName);
+              } catch (e) {
+                print('Error updating profile in database: $e');
+              }
+
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile updated successfully!')),
+                );
+                context.pop();
+              }
             },
             child: Text('Save', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
           ),
@@ -61,7 +96,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       ),
                       child: Center(
                         child: Text(
-                          'JD',
+                          _nameController.text.isNotEmpty
+                              ? _nameController.text.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase()
+                              : 'U',
                           style: TextStyle(color: colorScheme.onPrimary, fontSize: 32, fontWeight: FontWeight.bold),
                         ),
                       ),
